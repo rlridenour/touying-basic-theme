@@ -1,9 +1,8 @@
-// theme.typ
+// lib.typ
 //
-// A Touying theme that replicates the "Basic White" Beamer theme
-// (see ../basicwhite-beamer-theme): a plain white background, bold
-// black text, no header/footer chrome, and a two-column title slide
-// with an optional logo.
+// A Touying theme that replicates the "Basic White" Beamer theme: a
+// plain white background, bold black text, no header/footer chrome,
+// and a two-column title slide with an optional logo.
 //
 // Heading levels map onto the Beamer document structure:
 //   =   section        (\section)
@@ -11,6 +10,14 @@
 //   === slide / frame    (\begin{frame}{...})
 
 #import "@preview/touying:0.7.4": *
+
+/// The "univ" logo bundled with the theme, for use as
+/// `config-info(logo: univ-logo())`.
+#let univ-logo(width: 60%) = image("logos/univ.png", width: width)
+
+/// The "school" logo bundled with the theme, for use as
+/// `config-info(logo: school-logo())`.
+#let school-logo(width: 60%) = image("logos/school.png", width: width)
 
 /// Default slide function. The frame title (the current level-3
 /// heading) is shown bold and black at the top of the slide body via
@@ -113,7 +120,7 @@
 ///     author: [Dr. Ridenour],
 ///     institution: [Department of Philosophy],
 ///     date: datetime.today(),
-///     logo: image("logos/univ.png", width: 60%),
+///     logo: univ-logo(),
 ///   ),
 /// )
 /// ```
