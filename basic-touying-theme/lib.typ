@@ -47,6 +47,54 @@
   )
 })
 
+/// A slide with two side-by-side columns, e.g. text next to an
+/// image. Set its frame title with a `===` heading as usual and call
+/// this in place of that heading's plain body.
+///
+/// Example:
+///
+/// ```typst
+/// === My Slide
+/// #two-column-slide[Left content][Right content]
+/// ```
+///
+/// - columns (array): The two column widths. Default is `(1fr, 1fr)`.
+///
+/// - gutter (length): The space between the two columns. Default is `2em`.
+#let two-column-slide(
+  config: (:),
+  columns: (1fr, 1fr),
+  gutter: 2em,
+  ..bodies,
+) = slide(
+  config: config,
+  composer: cols.with(columns: columns, gutter: gutter),
+  ..bodies,
+)
+
+/// A full-bleed slide with no margin, no header/footer, and no frame
+/// title -- for a full-screen image or other graphic. Doesn't need a
+/// heading; if placed right after one, that heading's title is
+/// simply not shown on this slide.
+///
+/// Example: `#full-slide(image("photo.jpg", width: 100%, height: 100%, fit: "cover"))`
+///
+/// - fill (color, none, auto): The slide's background fill, useful as
+///   letterboxing behind a graphic that doesn't cover the full frame.
+///   Default is `auto`, which keeps the theme's current variant background.
+#let full-slide(config: (:), fill: auto, body) = touying-slide-wrapper(self => {
+  let page-args = (margin: 0pt, header: none, footer: none)
+  if fill != auto {
+    page-args.fill = fill
+  }
+  let self = utils.merge-dicts(
+    self,
+    config-page(..page-args),
+    config-common(subslide-preamble: none),
+  )
+  touying-slide(self: self, config: config, body)
+})
+
 /// A slide whose body is centered, both horizontally and vertically.
 /// Used for the title and section slides.
 #let centered-slide(config: (:), ..args) = touying-slide-wrapper(self => {

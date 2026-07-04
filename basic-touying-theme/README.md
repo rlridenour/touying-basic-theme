@@ -89,6 +89,37 @@ Only `===` headings become the visible frame title (bold, top of the
 slide body); `=` and `==` headings produce their own full section /
 subsection slides.
 
+## Two-column slides
+
+`two-column-slide` lays out its two arguments side by side, under the
+usual `===` frame title:
+
+```typst
+=== A Slide
+#two-column-slide(gutter: 2em)[Left content][Right content]
+```
+
+`columns` (default `(1fr, 1fr)`) and `gutter` (default `2em`) control
+the widths and spacing. For anything more custom (three columns, an
+asymmetric split, etc.), call the underlying `slide` directly with
+Touying's `composer` argument, e.g. `#slide(composer: (2fr, 1fr))[...][...]`.
+
+## Full-bleed graphic slides
+
+`full-slide` renders its body with no margin, no header/footer, and
+no frame title -- for a full-screen image or other graphic that
+should fill the slide edge to edge:
+
+```typst
+#full-slide(image("photo.jpg", width: 100%, height: 100%, fit: "cover"))
+```
+
+It doesn't need a preceding heading; placed right after one, that
+heading's title simply isn't shown on this particular slide. Pass
+`fill:` to letterbox behind a graphic that doesn't cover the full
+frame -- by default the fill is `auto`, which keeps the theme's
+current variant background.
+
 ## Logos
 
 `univ-logo(width: 90%)` and `school-logo(width: 90%)` return the two
