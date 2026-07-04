@@ -46,10 +46,20 @@
 })
 
 /// A slide whose body is centered, both horizontally and vertically.
-/// Used for the title, section, and subsection slides.
+/// Used for the title and section slides.
 #let centered-slide(config: (:), ..args) = touying-slide-wrapper(self => {
   touying-slide(self: self, ..args.named(), config: config, align(
     center + horizon,
+    args.pos().sum(default: none),
+  ))
+})
+
+/// A slide whose body is vertically centered but flush left, used for
+/// the subsection slide -- the Beamer theme's `subsection page`
+/// template, unlike its `section page`, doesn't horizontally center.
+#let left-slide(config: (:), ..args) = touying-slide-wrapper(self => {
+  touying-slide(self: self, ..args.named(), config: config, align(
+    horizon,
     args.pos().sum(default: none),
   ))
 })
@@ -100,10 +110,10 @@
   #body
 ])
 
-/// New subsection slide: same treatment, one size down, mirroring
-/// the `subsection page` template. Triggered automatically on
-/// level-2 (`==`) headings.
-#let new-subsection-slide(config: (:), body) = centered-slide(config: config, [
+/// New subsection slide: same treatment, one size down, but flush
+/// left rather than centered, mirroring the `subsection page`
+/// template. Triggered automatically on level-2 (`==`) headings.
+#let new-subsection-slide(config: (:), body) = left-slide(config: config, [
   #text(size: 1.15em, weight: "bold", utils.display-current-heading(level: 2))
   #body
 ])
@@ -133,7 +143,7 @@
 #let basicwhite-theme(
   aspect-ratio: "16-9",
   subslide-preamble: block(
-    below: 1em,
+    below: 2em,
     text(size: 1.2em, weight: "bold", utils.display-current-heading(level: 3)),
   ),
   ..args,
