@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this repo is
 
-A [Touying](https://touying-typ.github.io/) theme for Typst presentations that replicates the author's `basicwhite` Beamer/LaTeX theme. The Typst theme package (`basic-touying-theme/`) is the deliverable; everything else is reference material or scratch test content.
+A [Touying](https://touying-typ.github.io/) theme for Typst presentations that replicates the author's `basicwhite` Beamer/LaTeX theme. The Typst theme package (`basic-theme/`) is the deliverable; everything else is reference material or scratch test content.
 
 ## Commands
 
@@ -23,23 +23,23 @@ cd touying-presentation
 typst compile touying-presentation-slides-white.typ
 ```
 
-There's no automated verification — after any change to `basic-touying-theme/lib.typ`, compile the `touying-presentation/` test deck (all three variants) and read the resulting PDF to visually confirm the change, rather than trusting a clean compile alone.
+There's no automated verification — after any change to `basic-theme/lib.typ`, compile the `touying-presentation/` test deck (all three variants) and read the resulting PDF to visually confirm the change, rather than trusting a clean compile alone.
 
 ### Installing/updating the local package
 
-The theme is developed by editing `basic-touying-theme/` directly and importing it as `@local/basic-touying-theme:0.1.0` from test presentations. This only works if the versioned package directory is symlinked into Typst's local package directory:
+The theme is developed by editing `basic-theme/` directly and importing it as `@local/basic-theme:0.1.0` from test presentations. This only works if the versioned package directory is symlinked into Typst's local package directory:
 
 ```sh
-mkdir -p "$HOME/Library/Application Support/typst/packages/local/basic-touying-theme"
-ln -s "/path/to/touying-basic-theme/basic-touying-theme" \
-  "$HOME/Library/Application Support/typst/packages/local/basic-touying-theme/0.1.0"
+mkdir -p "$HOME/Library/Application Support/typst/packages/local/basic-theme"
+ln -s "/path/to/touying-basic-theme/basic-theme" \
+  "$HOME/Library/Application Support/typst/packages/local/basic-theme/0.1.0"
 ```
 
 (Linux: `~/.local/share/typst/packages/local/...`; Windows: `%APPDATA%\typst\packages\local\...`.) Because it's a symlink, edits to `lib.typ` take effect immediately — there is no separate copy/install step to remember.
 
 ## Repo layout
 
-- **`basic-touying-theme/`** — the theme itself, laid out as a Typst package (`typst.toml` with `entrypoint = "lib.typ"`). Tracked in git; this is the only directory whose changes matter for the "product" of this repo.
+- **`basic-theme/`** — the theme itself, laid out as a Typst package (`typst.toml` with `entrypoint = "lib.typ"`). Tracked in git; this is the only directory whose changes matter for the "product" of this repo.
   - `lib.typ` — all theme code (see Architecture below).
   - `logos/univ.png`, `logos/school.png` — bundled logos, exposed via `univ-logo()`/`school-logo()` helpers.
   - `README.md` — the theme's own usage docs (import syntax, heading convention, local-package install instructions). Keep in sync with `lib.typ` when changing its public API.
@@ -48,7 +48,7 @@ ln -s "/path/to/touying-basic-theme/basic-touying-theme" \
 
 ## Architecture
 
-### Theme structure (`basic-touying-theme/lib.typ`)
+### Theme structure (`basic-theme/lib.typ`)
 
 The theme is a single file built on top of `@preview/touying:0.7.4`. Key design points a future change needs to respect:
 

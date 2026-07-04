@@ -15,7 +15,7 @@ entrypoint), so it can be installed as a local package -- see
 
 ```typst
 #import "@preview/touying:0.7.4": *
-#import "@local/basic-touying-theme:0.1.0": *
+#import "@local/basic-theme:0.1.0": *
 
 #show: basic-theme.with(
   aspect-ratio: "16-9",
@@ -47,7 +47,7 @@ whatever folder you compile from, you'll need to pass `--root` (or
 configure your editor's Typst root) to a common ancestor directory:
 
 ```typst
-#import "path/to/basic-touying-theme/lib.typ": *
+#import "path/to/basic-theme/lib.typ": *
 ```
 
 ```sh
@@ -67,12 +67,12 @@ up immediately, without a separate copy/install step:
 
 ```sh
 # macOS
-mkdir -p "$HOME/Library/Application Support/typst/packages/local/basic-touying-theme"
-ln -s "/path/to/touying-basic-theme/basic-touying-theme" \
-  "$HOME/Library/Application Support/typst/packages/local/basic-touying-theme/0.1.0"
+mkdir -p "$HOME/Library/Application Support/typst/packages/local/basic-theme"
+ln -s "/path/to/touying-basic-theme/basic-theme" \
+  "$HOME/Library/Application Support/typst/packages/local/basic-theme/0.1.0"
 ```
 
-Then `#import "@local/basic-touying-theme:0.1.0": *` works from any
+Then `#import "@local/basic-theme:0.1.0": *` works from any
 Typst project on the machine.
 
 ## Heading levels
