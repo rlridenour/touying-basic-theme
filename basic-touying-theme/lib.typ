@@ -12,6 +12,16 @@
 //   === slide / frame    (\begin{frame}{...})
 
 #import "@preview/touying:0.7.4": *
+#import "@preview/touying:0.7.4": speaker-note as touying-speaker-note
+
+/// Speaker note, shown smaller than the slide body so it reads as a
+/// presenter aside rather than slide content.
+#let speaker-note(
+  mode: "typ",
+  setting: text.with(size: .7em),
+  subslide: auto,
+  note,
+) = touying-speaker-note(mode: mode, setting: setting, subslide: subslide, note)
 
 /// The "univ" logo bundled with the theme, for use as
 /// `config-info(logo: univ-logo())`.
@@ -206,7 +216,11 @@
   variant: "white",
   subslide-preamble: block(
     below: 2em,
-    text(size: 1.2em, weight: "bold", utils.display-current-heading(level: 3)),
+    text(
+      size: 1.2em,
+      weight: "bold",
+      utils.display-current-heading(level: 3, numbered: false),
+    ),
   ),
   ..args,
   body,
