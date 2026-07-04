@@ -13,11 +13,11 @@
 
 /// The "univ" logo bundled with the theme, for use as
 /// `config-info(logo: univ-logo())`.
-#let univ-logo(width: 60%) = image("logos/univ.png", width: width)
+#let univ-logo(width: 90%) = image("logos/univ.png", width: width)
 
 /// The "school" logo bundled with the theme, for use as
 /// `config-info(logo: school-logo())`.
-#let school-logo(width: 60%) = image("logos/school.png", width: width)
+#let school-logo(width: 90%) = image("logos/school.png", width: width)
 
 /// Default slide function. The frame title (the current level-3
 /// heading) is shown bold and black at the top of the slide body via
@@ -65,29 +65,29 @@
   let text-block = {
     set align(left)
     set text(fill: self.colors.neutral-darkest)
-    block(below: .5em, text(size: 1.4em, weight: "bold", info.title))
+    block(below: .5em, text(size: 1.3em, weight: "bold", info.title))
     if info.subtitle not in (none, []) {
-      block(below: 1em, text(size: 1.15em, weight: "bold", info.subtitle))
+      block(below: 1em, text(size: .9em, weight: "bold", info.subtitle))
     }
     if info.author not in (none, []) {
-      block(below: .6em, text(size: .85em, info.author))
+      block(below: .6em, text(size: 0.8em, info.author))
     }
     if info.institution not in (none, []) {
-      block(below: .6em, text(size: .75em, info.institution))
+        block(below: .6em, text(size: .8em, info.institution))
     }
     if info.date != none {
-      block(below: .6em, text(size: .75em, utils.display-info-date(self)))
+      block(below: .6em, text(size: .8em, utils.display-info-date(self)))
     }
     if extra != none {
       block(above: .5em, text(size: .75em, extra))
     }
   }
 
-  let body = grid(
+  let body = align(horizon, grid(
     columns: (60%, 40%),
     align(horizon, text-block),
     align(center + horizon, if info.logo != none { info.logo }),
-  )
+  ))
 
   touying-slide(self: self, config: config, body)
 })
