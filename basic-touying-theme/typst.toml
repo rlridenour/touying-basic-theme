@@ -1,0 +1,6 @@
+[package]
+name = "basic-touying-theme"
+version = "0.1.0"
+entrypoint = "lib.typ"
+description = "A Touying theme replicating the basicwhite Beamer theme, with white/black/gray variants"
+authors = ["Randy Ridenour"]

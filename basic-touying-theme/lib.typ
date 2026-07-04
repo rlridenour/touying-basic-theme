@@ -1,8 +1,10 @@
 // lib.typ
 //
-// A Touying theme that replicates the "Basic White" Beamer theme: a
-// plain white background, bold black text, no header/footer chrome,
-// and a two-column title slide with an optional logo.
+// A Touying theme that replicates the "basicwhite" Beamer theme:
+// bold text, no header/footer chrome, and a two-column title slide
+// with an optional logo. Offers three background/text variants --
+// "white" (black on white), "black" (white on black), and "gray"
+// (black on light gray) -- selected via `basic-theme(variant: ...)`.
 //
 // Heading levels map onto the Beamer document structure:
 //   =   section        (\section)
@@ -20,7 +22,7 @@
 #let school-logo(width: 90%) = image("logos/school.png", width: width)
 
 /// Default slide function. The frame title (the current level-3
-/// heading) is shown bold and black at the top of the slide body via
+/// heading) is shown bold at the top of the slide body via
 /// `subslide-preamble` -- there is no separate header/footer chrome,
 /// mirroring the Beamer theme's plain `frametitle` template.
 #let slide(
@@ -102,8 +104,8 @@
   touying-slide(self: self, config: config, body)
 })
 
-/// New section slide: bold black heading, centered on an otherwise
-/// blank slide, mirroring the `section page` template. Triggered
+/// New section slide: bold heading, centered on an otherwise blank
+/// slide, mirroring the `section page` template. Triggered
 /// automatically on level-1 (`=`) headings.
 #let new-section-slide(config: (:), body) = centered-slide(config: config, [
   #text(size: 1.4em, weight: "bold", utils.display-current-heading(level: 1))
@@ -118,13 +120,21 @@
   #body
 ])
 
-/// Touying basicwhite theme.
+// Background/text colors for each variant.
+#let variant-colors = (
+  white: (bg: white, fg: black),
+  black: (bg: black, fg: white),
+  gray: (bg: rgb("#eeeeee"), fg: black),
+)
+
+/// Touying basic theme.
 ///
 /// Example:
 ///
 /// ```typst
-/// #show: basicwhite-theme.with(
+/// #show: basic-theme.with(
 ///   aspect-ratio: "16-9",
+///   variant: "black",
 ///   config-info(
 ///     title: [My Talk],
 ///     author: [Dr. Ridenour],
@@ -137,11 +147,15 @@
 ///
 /// - aspect-ratio (string): The aspect ratio of the slides. Default is `16-9`.
 ///
+/// - variant (string): The background/text color scheme -- `"white"` (black
+///   on white), `"black"` (white on black), or `"gray"` (black on light
+///   gray). Default is `"white"`.
+///
 /// - subslide-preamble (content): What is shown at the top of each slide's
-///   body as its frame title. Default is the current level-3 heading, bold
-///   and black.
-#let basicwhite-theme(
+///   body as its frame title. Default is the current level-3 heading, bold.
+#let basic-theme(
   aspect-ratio: "16-9",
+  variant: "white",
   subslide-preamble: block(
     below: 2em,
     text(size: 1.2em, weight: "bold", utils.display-current-heading(level: 3)),
@@ -149,10 +163,17 @@
   ..args,
   body,
 ) = {
+  assert(
+    variant in variant-colors,
+    message: "basic-theme: variant must be one of " + repr(variant-colors.keys()),
+  )
+  let (bg, fg) = variant-colors.at(variant)
+
   show: touying-slides.with(
     config-page(
       ..utils.page-args-from-aspect-ratio(aspect-ratio),
       margin: 2em,
+      fill: bg,
     ),
     config-common(
       slide-level: 3,
@@ -176,9 +197,9 @@
       alert: utils.alert-with-primary-color,
     ),
     config-colors(
-      neutral-lightest: white,
-      neutral-darkest: black,
-      primary: black,
+      neutral-lightest: bg,
+      neutral-darkest: fg,
+      primary: fg,
     ),
     // save the variables for later use
     config-store(

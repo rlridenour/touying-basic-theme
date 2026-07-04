@@ -1,15 +1,16 @@
 # touying-basic-theme
 
-A [Touying](https://touying-typ.github.io/) theme for Typst presentations, replicating the `basicwhite` Beamer theme: a plain white background, bold black sans-serif text, no header/footer chrome, and a two-column title slide with an optional logo.
+A [Touying](https://touying-typ.github.io/) theme for Typst presentations, replicating the `basicwhite` Beamer theme: bold sans-serif text, no header/footer chrome, and a two-column title slide with an optional logo. Comes in three background/text variants: `"white"` (black on white, the default), `"black"` (white on black), and `"gray"` (black on light gray).
 
-The theme lives in [`basicwhite-touying-theme/`](basicwhite-touying-theme) — see that folder's README for the full option reference, including how to install it as a local Typst package. Quick start, assuming it's installed as `@local/basicwhite-touying-theme:0.1.0`:
+The theme lives in [`basic-touying-theme/`](basic-touying-theme) — see that folder's README for the full option reference, including how to install it as a local Typst package. Quick start, assuming it's installed as `@local/basic-touying-theme:0.1.0`:
 
 ```typst
 #import "@preview/touying:0.7.4": *
-#import "@local/basicwhite-touying-theme:0.1.0": *
+#import "@local/basic-touying-theme:0.1.0": *
 
-#show: basicwhite-theme.with(
+#show: basic-theme.with(
   aspect-ratio: "16-9",
+  variant: "white", // or "black", "gray"
   config-info(
     title: [My Talk],
     subtitle: [A subtitle],
@@ -35,6 +36,6 @@ Headings map onto the Beamer document structure: `=` is a section (`\section`), 
 
 ## Repo layout
 
-- `basicwhite-touying-theme/` — the Touying theme itself (a Typst package: `typst.toml`, `lib.typ`, logos), the deliverable of this repo.
+- `basic-touying-theme/` — the Touying theme itself (a Typst package: `typst.toml`, `lib.typ`, logos), the deliverable of this repo.
 - `basicwhite-beamer-theme/` — the original Beamer theme (`.sty` files, sample PDF, logos) this Touying theme replicates, kept for reference.
 - `touying-presentation/` — a scratch Touying project used to test the theme against the Beamer reference; not tracked in git.

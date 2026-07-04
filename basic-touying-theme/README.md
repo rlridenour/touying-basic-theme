@@ -1,9 +1,11 @@
-# basicwhite Touying theme
+# basic Touying theme
 
 A [Touying](https://touying-typ.github.io/) theme that replicates the
-`basicwhite` Beamer theme (see `../basicwhite-beamer-theme`): a plain
-white background, bold black text, no header/footer chrome, and a
-two-column title slide with an optional logo.
+`basicwhite` Beamer theme (see `../basicwhite-beamer-theme`): bold
+text, no header/footer chrome, and a two-column title slide with an
+optional logo. Offers three background/text variants: `"white"`
+(black on white, the default), `"black"` (white on black), and
+`"gray"` (black on light gray).
 
 This folder is laid out as a Typst package (`typst.toml` + `lib.typ`
 entrypoint), so it can be installed as a local package -- see
@@ -13,10 +15,11 @@ entrypoint), so it can be installed as a local package -- see
 
 ```typst
 #import "@preview/touying:0.7.4": *
-#import "@local/basicwhite-touying-theme:0.1.0": *
+#import "@local/basic-touying-theme:0.1.0": *
 
-#show: basicwhite-theme.with(
+#show: basic-theme.with(
   aspect-ratio: "16-9",
+  variant: "white", // or "black", "gray"
   config-info(
     title: [My Talk],
     subtitle: [A subtitle],
@@ -44,7 +47,7 @@ whatever folder you compile from, you'll need to pass `--root` (or
 configure your editor's Typst root) to a common ancestor directory:
 
 ```typst
-#import "path/to/basicwhite-touying-theme/lib.typ": *
+#import "path/to/basic-touying-theme/lib.typ": *
 ```
 
 ```sh
@@ -64,13 +67,13 @@ up immediately, without a separate copy/install step:
 
 ```sh
 # macOS
-mkdir -p "$HOME/Library/Application Support/typst/packages/local/basicwhite-touying-theme"
-ln -s "/path/to/touying-basic-theme/basicwhite-touying-theme" \
-  "$HOME/Library/Application Support/typst/packages/local/basicwhite-touying-theme/0.1.0"
+mkdir -p "$HOME/Library/Application Support/typst/packages/local/basic-touying-theme"
+ln -s "/path/to/touying-basic-theme/basic-touying-theme" \
+  "$HOME/Library/Application Support/typst/packages/local/basic-touying-theme/0.1.0"
 ```
 
-Then `#import "@local/basicwhite-touying-theme:0.1.0": *` works from
-any Typst project on the machine.
+Then `#import "@local/basic-touying-theme:0.1.0": *` works from any
+Typst project on the machine.
 
 ## Heading levels
 
@@ -88,7 +91,7 @@ subsection slides.
 
 ## Logos
 
-`univ-logo(width: 60%)` and `school-logo(width: 60%)` return the two
+`univ-logo(width: 90%)` and `school-logo(width: 90%)` return the two
 logos bundled with the theme (copied from the Beamer theme), for use
 as `config-info(logo: univ-logo())`. Omit `logo` (or pass `none`) for
 a plain title slide with no image.
