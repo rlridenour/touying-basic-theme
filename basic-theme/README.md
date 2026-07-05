@@ -89,6 +89,24 @@ Only `===` headings become the visible frame title (bold, top of the
 slide body); `=` and `==` headings produce their own full section /
 subsection slides.
 
+If a talk has no subsections, pass `slide-level: 2` to skip the
+subsection level entirely -- then `=` is a section and `==` is the
+frame directly (its heading becomes the visible frame title, and
+there's no separate subsection slide):
+
+```typst
+#show: basic-theme.with(
+  slide-level: 2,
+  // ...
+)
+
+= Section
+
+== A slide
+
+Content goes here.
+```
+
 ## Two-column slides
 
 `two-column-slide` lays out its two arguments side by side, under the

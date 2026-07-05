@@ -73,10 +73,15 @@ SLUG names the corresponding slides/handout files in the comments."
 )
 
 // variant: \"white\" (default), \"black\", or \"gray\".
-#let project(variant: \"white\", body) = {
+//
+// slide-level: 3 (default) if this talk uses subsections (`=` section,
+// `==` subsection, `===` frame), or 2 for a talk with no subsections
+// (`=` section, `==` frame directly).
+#let project(variant: \"white\", slide-level: 3, body) = {
   show: basic-theme.with(
     aspect-ratio: \"16-9\",
     variant: variant,
+    slide-level: slide-level,
     config-common(
       show-notes-on-second-screen: right,
     ),
@@ -94,26 +99,43 @@ SLUG names the corresponding slides/handout files in the comments."
 
 // -- Handout: a single flowing document, no slide pagination ---------------
 
+// Which heading level is the \"frame\" level -- must match the
+// `slide-level` passed to `project()` for the live deck. Stored in a
+// state (rather than a plain constant) so `handout-project`'s
+// `slide-level` argument can set it and `nearest-heading-title` can
+// read it back, since the two run in different function calls.
+#let handout-frame-level = state(\"handout-frame-level\", 3)
+
 // Portrait US letter, 12pt body text; no theme/pagination machinery at
-// all. Level-3 headings (slide titles) are hidden here -- they're shown
+// all.
+//
+// slide-level: 3 (default) if this talk uses subsections (`=` section,
+// `==` subsection, `===` frame), or 2 for a talk with no subsections
+// (`=` section, `==` frame directly) -- must match the `slide-level`
+// passed to `project()` for the live deck.
+//
+// Frame-level headings (slide titles) are hidden here -- they're shown
 // inside handout-slide-box instead, so the title ends up inside the box
-// rather than as a separate heading above it. Section (level 1) and
-// subsection (level 2) headings are untouched: they stay outside any
-// box, same as the document title, and are numbered (1, 1.1, 1.2, 2, ...).
-#let handout-project(body) = {
+// rather than as a separate heading above it. Section (and, when
+// slide-level is 3, subsection) headings are untouched: they stay
+// outside any box, same as the document title, and are numbered
+// (1, 1.1, 1.2, 2, ...).
+#let handout-project(slide-level: 3, body) = {
   set page(paper: \"us-letter\")
   set text(size: 12pt)
   set heading(numbering: \"1.1\")
-  show heading.where(level: 3): none
+  show heading.where(level: slide-level): none
 
+  handout-frame-level.update(slide-level)
   body
 }
 
-// The nearest level-3 heading at or before `here()`, compared by actual
-// position (page, then y) rather than by page alone -- Touying's own
-// `utils.display-current-heading` only compares pages, which isn't
+// The nearest frame-level heading at or before `here()`, compared by
+// actual position (page, then y) rather than by page alone -- Touying's
+// own `utils.display-current-heading` only compares pages, which isn't
 // precise enough when several boxed slides share one handout page.
-#let nearest-heading-title(level: 3) = context {
+#let nearest-heading-title() = context {
+  let level = handout-frame-level.get()
   let loc = here().position()
   let candidates = query(heading.where(level: level)).filter(h => {
     let p = h.location().position()
@@ -123,7 +145,7 @@ SLUG names the corresponding slides/handout files in the comments."
 }
 
 // Every \"slide\" in the handout is boxed like this, with its title (the
-// nearest preceding level-3 heading) shown inside the box, so it's
+// nearest preceding frame-level heading) shown inside the box, so it's
 // visually clear where one slide ends and the next begins in the
 // flowing document. `breakable: false` keeps a slide's content from
 // splitting across a page break.

@@ -215,19 +215,19 @@
 ///   on white), `"black"` (white on black), or `"gray"` (black on light
 ///   gray). Default is `"white"`.
 ///
+/// - slide-level (int): The heading depth that becomes a frame -- `3` (the
+///   default) if the talk uses subsections (`=` section, `==` subsection,
+///   `===` frame), or `2` for a talk with no subsections (`=` section, `==`
+///   frame directly). No other values are supported.
+///
 /// - subslide-preamble (content): What is shown at the top of each slide's
-///   body as its frame title. Default is the current level-3 heading, bold.
+///   body as its frame title. Default is the current frame-level heading
+///   (i.e. the heading at `slide-level`), bold.
 #let basic-theme(
   aspect-ratio: "16-9",
   variant: "white",
-  subslide-preamble: block(
-    below: 2em,
-    text(
-      size: 1.2em,
-      weight: "bold",
-      utils.display-current-heading(level: 3, numbered: false),
-    ),
-  ),
+  slide-level: 3,
+  subslide-preamble: auto,
   ..args,
   body,
 ) = {
@@ -235,7 +235,23 @@
     variant in variant-colors,
     message: "basic-theme: variant must be one of " + repr(variant-colors.keys()),
   )
+  assert(
+    slide-level in (2, 3),
+    message: "basic-theme: slide-level must be 2 (no subsections) or 3 (with subsections)",
+  )
   let (bg, fg) = variant-colors.at(variant)
+  let subslide-preamble = if subslide-preamble == auto {
+    block(
+      below: 2em,
+      text(
+        size: 1.2em,
+        weight: "bold",
+        utils.display-current-heading(level: slide-level, numbered: false),
+      ),
+    )
+  } else {
+    subslide-preamble
+  }
 
   show: touying-slides.with(
     config-page(
@@ -244,7 +260,7 @@
       fill: bg,
     ),
     config-common(
-      slide-level: 3,
+      slide-level: slide-level,
       slide-fn: slide,
       new-section-slide-fn: new-section-slide,
       new-subsection-slide-fn: new-subsection-slide,
