@@ -6,10 +6,11 @@
 ;; slide deck and handout are the two things you actually compile.
 ;;
 ;; Uses the "basic-theme" Touying package (@local/basic-theme:0.1.0):
-;; heading levels map onto section (=) / subsection (==) / frame (===),
-;; the theme supports "white"/"black"/"gray" variants, and the generated
-;; handout boxes each slide (with its title inside the box) and numbers
-;; sections/subsections.
+;; heading levels map onto section (=) / frame (==) by default (pass
+;; slide-level: 3 for a talk that needs a subsection (==) level between
+;; them, with frames at ===), the theme supports "white"/"black"/"gray"
+;; variants, and the generated handout boxes each slide (with its title
+;; inside the box) and numbers sections/subsections.
 ;;
 ;; Usage: M-x rlr/new-touying-presentation
 
@@ -74,10 +75,10 @@ SLUG names the corresponding slides/handout files in the comments."
 
 // variant: \"white\" (default), \"black\", or \"gray\".
 //
-// slide-level: 3 (default) if this talk uses subsections (`=` section,
-// `==` subsection, `===` frame), or 2 for a talk with no subsections
-// (`=` section, `==` frame directly).
-#let project(variant: \"white\", slide-level: 3, body) = {
+// slide-level: 2 (default) for a talk with no subsections (`=`
+// section, `==` frame directly), or 3 if this talk uses subsections
+// (`=` section, `==` subsection, `===` frame).
+#let project(variant: \"white\", slide-level: 2, body) = {
   show: basic-theme.with(
     aspect-ratio: \"16-9\",
     variant: variant,
@@ -104,15 +105,15 @@ SLUG names the corresponding slides/handout files in the comments."
 // state (rather than a plain constant) so `handout-project`'s
 // `slide-level` argument can set it and `nearest-heading-title` can
 // read it back, since the two run in different function calls.
-#let handout-frame-level = state(\"handout-frame-level\", 3)
+#let handout-frame-level = state(\"handout-frame-level\", 2)
 
 // Portrait US letter, 12pt body text; no theme/pagination machinery at
 // all.
 //
-// slide-level: 3 (default) if this talk uses subsections (`=` section,
-// `==` subsection, `===` frame), or 2 for a talk with no subsections
-// (`=` section, `==` frame directly) -- must match the `slide-level`
-// passed to `project()` for the live deck.
+// slide-level: 2 (default) for a talk with no subsections (`=`
+// section, `==` frame directly), or 3 if this talk uses subsections
+// (`=` section, `==` subsection, `===` frame) -- must match the
+// `slide-level` passed to `project()` for the live deck.
 //
 // Frame-level headings (slide titles) are hidden here -- they're shown
 // inside handout-slide-box instead, so the title ends up inside the box
@@ -120,7 +121,7 @@ SLUG names the corresponding slides/handout files in the comments."
 // slide-level is 3, subsection) headings are untouched: they stay
 // outside any box, same as the document title, and are numbered
 // (1, 1.1, 1.2, 2, ...).
-#let handout-project(slide-level: 3, body) = {
+#let handout-project(slide-level: 2, body) = {
   set page(paper: \"us-letter\")
   set text(size: 12pt)
   set heading(numbering: \"1.1\")
@@ -237,26 +238,6 @@ SLUG names the corresponding slides/handout files in the comments."
 ) = [
   #title-slide()
 
-  #speaker-note[
-    Welcome the audience and introduce the topic.
-  ]
-
-  = First Section
-
-  === First Slide
-
-  #slide[
-    Replace this with your content.
-
-    #pause
-
-    Use `#pause` for progressive reveals.
-  ]
-
-  #handout-note[
-    Add reader-facing context here — it will not appear on the live
-    slides, only in the handout.
-  ]
 ]
 "
           title))

@@ -34,9 +34,7 @@ entrypoint), so it can be installed as a local package -- see
 
 = Section
 
-== Subsection
-
-=== A slide
+== A slide
 
 Content goes here.
 ```
@@ -77,43 +75,45 @@ Typst project on the machine.
 
 ## Heading levels
 
-Headings map onto the Beamer document structure:
+By default (`slide-level: 2`, for a talk with no subsections),
+headings map onto the Beamer document structure like this:
 
 | Heading | Beamer equivalent    |
 | ------- | -------------------- |
 | `=`     | `\section{}`          |
-| `==`    | `\subsection{}`       |
-| `===`   | `\begin{frame}{...}`  |
+| `==`    | `\begin{frame}{...}`  |
 
-Only `===` headings become the visible frame title (bold, top of the
-slide body); `=` and `==` headings produce their own full section /
-subsection slides.
+Only `==` headings become the visible frame title (bold, top of the
+slide body); `=` headings produce their own full section slide.
 
-If a talk has no subsections, pass `slide-level: 2` to skip the
-subsection level entirely -- then `=` is a section and `==` is the
-frame directly (its heading becomes the visible frame title, and
-there's no separate subsection slide):
+If a talk does use subsections, pass `slide-level: 3` to add the
+subsection level back in:
 
 ```typst
 #show: basic-theme.with(
-  slide-level: 2,
+  slide-level: 3,
   // ...
 )
 
 = Section
 
-== A slide
+== Subsection
+
+=== A slide
 
 Content goes here.
 ```
 
+Here `===` becomes the visible frame title; `=` and `==` produce
+their own full section / subsection slides.
+
 ## Two-column slides
 
 `two-column-slide` lays out its two arguments side by side, under the
-usual `===` frame title:
+usual frame title (`==`, or `===` if using `slide-level: 3`):
 
 ```typst
-=== A Slide
+== A Slide
 #two-column-slide(gutter: 2em)[Left content][Right content]
 ```
 

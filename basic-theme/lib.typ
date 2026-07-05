@@ -6,7 +6,11 @@
 // "white" (black on white), "black" (white on black), and "gray"
 // (black on light gray) -- selected via `basic-theme(variant: ...)`.
 //
-// Heading levels map onto the Beamer document structure:
+// Heading levels map onto the Beamer document structure. By default
+// (slide-level: 2, since most talks don't need subsections):
+//   =   section  (\section)
+//   ==  frame    (\begin{frame}{...})
+// Pass slide-level: 3 for a talk that does use subsections:
 //   =   section        (\section)
 //   ==  subsection      (\subsection)
 //   === slide / frame    (\begin{frame}{...})
@@ -215,10 +219,10 @@
 ///   on white), `"black"` (white on black), or `"gray"` (black on light
 ///   gray). Default is `"white"`.
 ///
-/// - slide-level (int): The heading depth that becomes a frame -- `3` (the
-///   default) if the talk uses subsections (`=` section, `==` subsection,
-///   `===` frame), or `2` for a talk with no subsections (`=` section, `==`
-///   frame directly). No other values are supported.
+/// - slide-level (int): The heading depth that becomes a frame -- `2` (the
+///   default) for a talk with no subsections (`=` section, `==` frame
+///   directly), or `3` if the talk uses subsections (`=` section, `==`
+///   subsection, `===` frame). No other values are supported.
 ///
 /// - subslide-preamble (content): What is shown at the top of each slide's
 ///   body as its frame title. Default is the current frame-level heading
@@ -226,7 +230,7 @@
 #let basic-theme(
   aspect-ratio: "16-9",
   variant: "white",
-  slide-level: 3,
+  slide-level: 2,
   subslide-preamble: auto,
   ..args,
   body,
