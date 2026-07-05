@@ -247,7 +247,7 @@
       init: (self: none, body) => {
         // Beamer's default font theme is sans-serif; match it here.
         set text(
-          font: ("Helvetica Neue", "Arial", "Liberation Sans", "DejaVu Sans"),
+          font: ("Helvetica Neue", "Arial", "Fira Sans", "DejaVu Sans"),
           size: 25pt,
           fill: self.colors.neutral-darkest,
         )
