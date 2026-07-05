@@ -51,6 +51,7 @@ SLUG names the corresponding slides/handout files in the comments."
 #import \"@preview/touying:0.7.4\": *
 #import \"@local/basic-theme:0.1.0\": (
   basic-theme,
+  basic-theme-date-format,
   univ-logo,
   title-slide as live-title-slide,
   slide as live-slide,
@@ -156,7 +157,7 @@ SLUG names the corresponding slides/handout files in the comments."
 
   #presentation-info.institution
 
-  #presentation-info.date.display()
+  #presentation-info.date.display(basic-theme-date-format)
 ]
 
 // No animation reveal in a flowing document: everything is simply shown.

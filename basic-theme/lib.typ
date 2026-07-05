@@ -14,6 +14,12 @@
 #import "@preview/touying:0.7.4": *
 #import "@preview/touying:0.7.4": speaker-note as touying-speaker-note
 
+/// The date format used for the title slide's date field, e.g. "July 5,
+/// 2026". Exposed so a handout (which renders the date directly, outside
+/// any Touying context) can format it identically -- see
+/// `datetime.display(basic-theme-date-format)`.
+#let basic-theme-date-format = "[month repr:long] [day padding:none], [year]"
+
 /// Speaker note, shown smaller than the slide body so it reads as a
 /// presenter aside rather than slide content.
 #let speaker-note(
@@ -242,6 +248,7 @@
       slide-fn: slide,
       new-section-slide-fn: new-section-slide,
       new-subsection-slide-fn: new-subsection-slide,
+      datetime-format: basic-theme-date-format,
     ),
     config-methods(
       init: (self: none, body) => {
