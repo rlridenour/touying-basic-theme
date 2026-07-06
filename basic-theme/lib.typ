@@ -195,6 +195,68 @@
   gray: (bg: rgb("#eeeeee"), fg: black),
 )
 
+// The speaker-notes-view header (used by `show-notes-on-second-screen`/
+// `show-only-notes`) breadcrumbs headings above the frame level, e.g.
+// "Section --- Subsection". Touying's own default hardcodes that to
+// levels 1 and 2, which is right when slide-level is 3 (level 2 really
+// is the subsection) but wrong when slide-level is 2: level 2 is then
+// the frame heading itself, so the default just repeats the frame's own
+// title as a fake second line. Parameterize it by slide-level instead,
+// only showing a second breadcrumb line when there's a genuine
+// subsection level (slide-level: 3) to show.
+#let basic-theme-show-only-notes(slide-level) = (
+  self: none,
+  width: 0pt,
+  height: 0pt,
+  cutout: false,
+) => {
+  let header-fill = rgb("#CCCCCC")
+  let header-height = 88pt
+  let header-content = {
+    utils.display-current-heading(level: 1, depth: self.slide-level)
+    if slide-level > 2 {
+      linebreak()
+      [ --- ]
+      utils.display-current-heading(level: 2, depth: self.slide-level)
+    }
+  }
+  let body-fill = rgb("#E6E6E6")
+  let body-content = {
+    pad(x: 48pt, utils.current-slide-note)
+    // clear the slide note
+    utils.slide-note-state.update(none)
+  }
+
+  let template(hdr-fill, hdr-content, bdy-fill, bdy-content) = block(
+    fill: bdy-fill,
+    width: width,
+    height: height,
+    {
+      set align(left + top)
+      set text(size: 24pt, fill: black, weight: "regular")
+      block(
+        width: 100%,
+        height: header-height,
+        inset: (left: 32pt, top: 16pt),
+        outset: 0pt,
+        fill: hdr-fill,
+        hdr-content,
+      )
+      bdy-content
+    },
+  )
+
+  if cutout {
+    (
+      background: template(header-fill, none, body-fill, none),
+      foreground: template(none, header-content, none, body-content),
+      cutout-height: header-height,
+    )
+  } else {
+    template(header-fill, header-content, body-fill, body-content)
+  }
+}
+
 /// Touying basic theme.
 ///
 /// Example:
@@ -284,6 +346,7 @@
         body
       },
       alert: utils.alert-with-primary-color,
+      show-only-notes: basic-theme-show-only-notes(slide-level),
     ),
     config-colors(
       neutral-lightest: bg,
