@@ -329,7 +329,15 @@
       slide-level: slide-level,
       slide-fn: slide,
       new-section-slide-fn: new-section-slide,
-      new-subsection-slide-fn: new-subsection-slide,
+      // Touying's core dispatch always routes depth-2 headings through
+      // new-subsection-slide-fn, regardless of slide-level (see its
+      // core.typ). At slide-level: 2, a depth-2 heading *is* the frame
+      // itself, not a subsection -- registering this unconditionally
+      // made every frame heading also spawn a phantom title-only
+      // "subsection" page right before its real content. Only wire it
+      // up when slide-level: 3 actually puts a genuine subsection at
+      // depth 2.
+      new-subsection-slide-fn: if slide-level > 2 { new-subsection-slide } else { none },
       datetime-format: basic-theme-date-format,
     ),
     config-methods(
