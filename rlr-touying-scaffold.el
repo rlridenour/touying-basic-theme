@@ -9,8 +9,11 @@
 ;; heading levels map onto section (=) / frame (==) by default (pass
 ;; slide-level: 3 for a talk that needs a subsection (==) level between
 ;; them, with frames at ===), the theme supports "white"/"black"/"gray"
-;; variants, and the generated handout boxes each slide (with its title
-;; inside the box) and numbers sections/subsections.
+;; variants, and plain content under a heading needs no wrapper -- it
+;; becomes a slide automatically, which keeps content.typ close to a
+;; plain Org-mode export. The generated handout numbers every heading
+;; (1, 1.1, 1.2, 2, ...) and draws a line above each handout-note, to
+;; mark reader-only text that wasn't part of what the audience saw.
 ;;
 ;; Usage: M-x rlr/new-touying-presentation
 
@@ -42,8 +45,12 @@ SLUG names the corresponding slides/handout files in the comments."
 // the continuous handout (%1$s-handout.typ).
 //
 // content.typ defines its content as a function that takes title-slide/
-// pause/slide/speaker-note/handout-note/two-column-slide/full-slide as
-// parameters. Each entry point below supplies its own implementations:
+// pause/speaker-note/handout-note/two-column-slide/full-slide as
+// parameters -- plain body content under a heading needs no wrapper at
+// all; Touying automatically turns it into a slide when the theme's
+// slide-fn is registered (see basic-theme.with(...) below), which keeps
+// content.typ close to a plain Org-mode export. Each entry point below
+// supplies its own implementations of the remaining parameters:
 // %1$s-slides.typ passes the real Touying building blocks (real
 // pagination, animations, speaker notes); %1$s-handout.typ passes plain,
 // non-paginating stand-ins so the whole thing renders as one flowing
@@ -55,7 +62,6 @@ SLUG names the corresponding slides/handout files in the comments."
   basic-theme-date-format,
   univ-logo,
   title-slide as live-title-slide,
-  slide as live-slide,
   pause as live-pause,
   speaker-note as live-speaker-note,
   two-column-slide as live-two-column-slide,
@@ -100,70 +106,17 @@ SLUG names the corresponding slides/handout files in the comments."
 
 // -- Handout: a single flowing document, no slide pagination ---------------
 
-// Which heading level is the \"frame\" level -- must match the
-// `slide-level` passed to `project()` for the live deck. Stored in a
-// state (rather than a plain constant) so `handout-project`'s
-// `slide-level` argument can set it and `nearest-heading-title` can
-// read it back, since the two run in different function calls.
-#let handout-frame-level = state(\"handout-frame-level\", 2)
-
 // Portrait US letter, 12pt body text; no theme/pagination machinery at
-// all.
-//
-// slide-level: 2 (default) for a talk with no subsections (`=`
-// section, `==` frame directly), or 3 if this talk uses subsections
-// (`=` section, `==` subsection, `===` frame) -- must match the
-// `slide-level` passed to `project()` for the live deck.
-//
-// Frame-level headings (slide titles) are hidden here -- they're shown
-// inside handout-slide-box instead, so the title ends up inside the box
-// rather than as a separate heading above it. Section (and, when
-// slide-level is 3, subsection) headings are untouched: they stay
-// outside any box, same as the document title, and are numbered
-// (1, 1.1, 1.2, 2, ...).
-#let handout-project(slide-level: 2, body) = {
+// all. Headings (section, and frame, and subsection if slide-level: 3
+// is used) render plainly with their own numbering (1, 1.1, 1.2, ...)
+// -- there's no box, so a frame heading doesn't need special hiding/
+// relocation the way it did when its title had to be pulled inside one.
+#let handout-project(body) = {
   set page(paper: \"us-letter\")
   set text(size: 12pt)
   set heading(numbering: \"1.1\")
-  show heading.where(level: slide-level): none
-
-  handout-frame-level.update(slide-level)
   body
 }
-
-// The nearest frame-level heading at or before `here()`, compared by
-// actual position (page, then y) rather than by page alone -- Touying's
-// own `utils.display-current-heading` only compares pages, which isn't
-// precise enough when several boxed slides share one handout page.
-#let nearest-heading-title() = context {
-  let level = handout-frame-level.get()
-  let loc = here().position()
-  let candidates = query(heading.where(level: level)).filter(h => {
-    let p = h.location().position()
-    p.page < loc.page or (p.page == loc.page and p.y <= loc.y)
-  })
-  if candidates.len() > 0 { candidates.last().body } else { none }
-}
-
-// Every \"slide\" in the handout is boxed like this, with its title (the
-// nearest preceding frame-level heading) shown inside the box, so it's
-// visually clear where one slide ends and the next begins in the
-// flowing document. `breakable: false` keeps a slide's content from
-// splitting across a page break.
-#let handout-slide-box(body) = block(
-  width: 100%%,
-  inset: 1em,
-  stroke: 0.5pt + gray,
-  radius: 2pt,
-  breakable: false,
-  above: 1.5em,
-  below: 1.5em,
-  [
-    #text(weight: \"bold\", size: 1.1em, nearest-heading-title())
-    #v(0.8em)
-    #body
-  ],
-)
 
 // The document title is not a \"slide\" in the same sense as the others
 // -- kept outside any box, same as section/subsection titles.
@@ -186,37 +139,31 @@ SLUG names the corresponding slides/handout files in the comments."
 // No animation reveal in a flowing document: everything is simply shown.
 #let handout-pause = none
 
-// A multi-subslide callback slide becomes one block showing the final
-// subslide's state.
-#let handout-slide(repeat: auto, ..bodies) = handout-slide-box({
-  let n = if repeat == auto { 1 } else { repeat }
-  bodies
-    .pos()
-    .map(b => if type(b) == function { b((subslide: n)) } else { b })
-    .sum(default: none)
-})
-
 // Speaker notes are presenter-only; never shown in the handout.
 #let handout-speaker-note(body) = none
 
 // A plain two-up grid; there's no pagination to preserve here.
-#let handout-two-column-slide(columns: (1fr, 1fr), gutter: 2em, ..bodies) = handout-slide-box(grid(
+#let handout-two-column-slide(columns: (1fr, 1fr), gutter: 2em, ..bodies) = grid(
   columns: columns,
   gutter: gutter,
   ..bodies.pos(),
-))
+)
 
 // There's no full-bleed page in a flowing document, and a `100%%` height
 // inside body would otherwise resolve against the whole rest of the
 // page -- bound it to a fixed-height box instead, so the graphic shows
 // inline at a sane size.
-#let handout-full-slide(fill: auto, body) = handout-slide-box(
-  box(width: 100%%, height: 300pt, clip: true, body),
-)
+#let handout-full-slide(fill: auto, body) = box(width: 100%%, height: 300pt, clip: true, body)
 
-// Handout notes read as ordinary body text, with no visual marker
-// distinguishing them from the rest of the article.
-#let handout-note(body) = body
+// A handout note is reader-only context that never appeared on the live
+// slide -- a line above it marks that boundary, so it's clear the text
+// below the line wasn't part of what the audience saw.
+#let handout-note(body) = {
+  v(0.5em)
+  line(length: 100%%, stroke: 0.5pt + gray)
+  v(0.5em)
+  body
+}
 "
           slug title))
 
@@ -226,11 +173,15 @@ SLUG names the corresponding slides/handout files in the comments."
 // Slide content for %1$s, written once as a function of its building
 // blocks so it can render either as live Touying slides (*-slides.typ) or
 // as a flowing handout (*-handout.typ).
+//
+// Plain content under a heading needs no wrapper; only speaker-note/
+// handout-note (which must differ between the live deck and the
+// handout) and the two special layouts (two-column-slide, full-slide)
+// are explicit calls.
 
 #let content(
   title-slide,
   pause,
-  slide,
   speaker-note,
   handout-note,
   two-column-slide,
@@ -252,7 +203,6 @@ SLUG names the corresponding slides/handout files in the comments."
   project,
   live-title-slide,
   live-pause,
-  live-slide,
   live-speaker-note,
   live-handout-note,
   live-two-column-slide,
@@ -265,7 +215,6 @@ SLUG names the corresponding slides/handout files in the comments."
 #content(
   live-title-slide,
   live-pause,
-  live-slide,
   live-speaker-note,
   live-handout-note,
   live-two-column-slide,
@@ -286,7 +235,6 @@ SLUG names the corresponding slides/handout files in the comments."
   handout-project,
   handout-title-slide,
   handout-pause,
-  handout-slide,
   handout-speaker-note,
   handout-note,
   handout-two-column-slide,
@@ -299,7 +247,6 @@ SLUG names the corresponding slides/handout files in the comments."
 #content(
   handout-title-slide,
   handout-pause,
-  handout-slide,
   handout-speaker-note,
   handout-note,
   handout-two-column-slide,
