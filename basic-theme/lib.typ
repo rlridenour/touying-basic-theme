@@ -279,7 +279,7 @@
           fill: self.colors.neutral-darkest,
         )
         set list(marker: [•])
-        set enum(numbering: "1.a.i)")
+          set enum(numbering: "1.a.i.")
         show footnote.entry: set text(size: .6em)
         body
       },
