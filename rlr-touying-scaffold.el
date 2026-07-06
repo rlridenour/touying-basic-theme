@@ -1,9 +1,12 @@
 ;;; rlr-touying-scaffold.el --- Scaffold a new Touying presentation -*- lexical-binding: t; -*-
 
 ;; Creates a new Touying presentation directory containing config.typ,
-;; content.typ, a live slide deck, and a flowing handout, following the
+;; talk.org, a live slide deck, and a flowing handout, following the
 ;; config.typ / content.typ / slides.typ / handout.typ pattern where the
 ;; slide deck and handout are the two things you actually compile.
+;; content.typ itself is generated from talk.org via ox-touying.el (if
+;; loaded) -- edit talk.org and re-export rather than hand-editing
+;; content.typ.
 ;;
 ;; Uses the "basic-theme" Touying package (@local/basic-theme:0.1.0):
 ;; heading levels map onto section (=) / frame (==) by default (pass
@@ -167,8 +170,11 @@ SLUG names the corresponding slides/handout files in the comments."
 "
           slug title))
 
-(defun rlr/touying-content-template (title)
-  "Return the contents of content.typ for a presentation titled TITLE."
+(defun rlr/touying-content-fallback-template (title)
+  "Return a minimal content.typ for a presentation titled TITLE.
+Only used when ox-touying.el isn't loaded, so talk.org can't be
+exported yet -- once it's loaded, re-export talk.org instead of
+hand-editing this file."
   (format "// content.typ
 // Slide content for %1$s, written once as a function of its building
 // blocks so it can render either as live Touying slides (*-slides.typ) or
@@ -178,6 +184,11 @@ SLUG names the corresponding slides/handout files in the comments."
 // handout-note (which must differ between the live deck and the
 // handout) and the two special layouts (two-column-slide, full-slide)
 // are explicit calls.
+//
+// This is a placeholder -- ox-touying.el wasn't loaded when this
+// presentation was scaffolded, so content.typ could not be generated
+// from talk.org. Load ox-touying.el and M-x
+// rlr/org-export-to-touying-content from talk.org to regenerate it.
 
 #let content(
   title-slide,
@@ -190,6 +201,30 @@ SLUG names the corresponding slides/handout files in the comments."
   #title-slide()
 
 ]
+"
+          title))
+
+(defun rlr/touying-org-template (title)
+  "Return the contents of talk.org for a presentation titled TITLE.
+Exported to content.typ via `rlr/org-export-to-touying-content' (see
+ox-touying.el) -- edit this file and re-export rather than
+hand-editing content.typ."
+  (format "#+TITLE: %1$s
+
+# Edit this file, then M-x rlr/org-export-to-touying-content to
+# regenerate content.typ -- don't hand-edit content.typ, since
+# re-exporting will overwrite it. Conventions:
+#
+#   * Section     -> `= Section` (its own section slide)
+#   ** A slide     -> `== A slide` (a frame -- no wrapper needed for
+#                     plain body text)
+#   #+begin_speakernote ... #+end_speakernote -> #speaker-note[...]
+#   #+begin_handoutnote ... #+end_handoutnote -> #handout-note[...]
+#   @@typst:#pause@@ -> a progressive reveal
+#   #+begin_columns containing two #+begin_column ... #+end_column
+#     blocks -> #two-column-slide[...][...]
+#   #+begin_fullslide ... #+end_fullslide -> #full-slide(...); a lone
+#     image link inside becomes a full-bleed image
 "
           title))
 
@@ -255,16 +290,27 @@ SLUG names the corresponding slides/handout files in the comments."
 "
           slug))
 
+(defun rlr/touying--generate-content-file (org-file content-file title)
+  "Generate CONTENT-FILE by exporting ORG-FILE with ox-touying.el.
+Falls back to a minimal static template if ox-touying.el isn't loaded
+(and can't be found on `load-path')."
+  (if (require 'ox-touying nil t)
+      (with-current-buffer (find-file-noselect org-file)
+        (org-mode)
+        (rlr/org-export-to-touying-content))
+    (rlr/touying--write-file content-file (rlr/touying-content-fallback-template title))))
+
 ;;;###autoload
 (defun rlr/new-touying-presentation (title dir)
   "Scaffold a new Touying presentation called TITLE inside DIR.
 
 Creates a subdirectory of DIR (named after a slug derived from TITLE)
-containing config.typ, content.typ, and a slides/handout pair whose
-filenames are prefixed with that slug, e.g. \"my-talk-slides.typ\" and
-\"my-talk-handout.typ\". The slug is TITLE lower-cased, hyphenated, with
-the words \"the\" and \"and\", and any two-letter-or-shorter words,
-removed."
+containing config.typ, talk.org, a slides/handout pair whose filenames
+are prefixed with that slug (e.g. \"my-talk-slides.typ\" and
+\"my-talk-handout.typ\"), and content.typ -- generated from talk.org via
+ox-touying.el (see `rlr/touying--generate-content-file'). The slug is
+TITLE lower-cased, hyphenated, with the words \"the\" and \"and\", and
+any two-letter-or-shorter words, removed."
   (interactive
    (list (read-string "Presentation title: ")
          (read-directory-name "Create in directory: " default-directory)))
@@ -273,15 +319,17 @@ removed."
       (user-error "Title \"%s\" has no usable words for a filename" title))
     (let* ((project-dir (expand-file-name slug dir))
            (config-file (expand-file-name "config.typ" project-dir))
+           (org-file (expand-file-name "talk.org" project-dir))
            (content-file (expand-file-name "content.typ" project-dir))
            (slides-file (expand-file-name (concat slug "-slides.typ") project-dir))
            (handout-file (expand-file-name (concat slug "-handout.typ") project-dir)))
       (make-directory project-dir t)
       (rlr/touying--write-file config-file (rlr/touying-config-template slug title))
-      (rlr/touying--write-file content-file (rlr/touying-content-template title))
+      (rlr/touying--write-file org-file (rlr/touying-org-template title))
       (rlr/touying--write-file slides-file (rlr/touying-slides-template slug))
       (rlr/touying--write-file handout-file (rlr/touying-handout-template slug))
-      (find-file content-file)
+      (rlr/touying--generate-content-file org-file content-file title)
+      (find-file org-file)
       (message "Created Touying presentation \"%s\" in %s" title project-dir))))
 
 (defun compile-typst-lecture ()
