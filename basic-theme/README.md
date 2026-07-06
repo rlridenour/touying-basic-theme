@@ -39,6 +39,13 @@ entrypoint), so it can be installed as a local package -- see
 Content goes here.
 ```
 
+Plain content under a frame heading (`==`, or `===` if using
+`slide-level: 3` -- see [Heading levels](#heading-levels)) needs no
+wrapper; it becomes a slide automatically. Call `slide` directly only
+for advanced control -- e.g. multiple explicit subslide bodies
+(`#slide[a][b]`), a custom `composer`, or per-slide `config:`
+overrides.
+
 If you'd rather not install it as a package, you can import `lib.typ`
 directly by relative path instead -- but since it then lives outside
 whatever folder you compile from, you'll need to pass `--root` (or

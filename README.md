@@ -25,17 +25,16 @@ The theme lives in [`basic-theme/`](basic-theme) — see that folder's README fo
 
 = Section
 
-== Subsection
-
-=== A slide
+== A slide
 
 Content goes here.
 ```
 
-Headings map onto the Beamer document structure: `=` is a section (`\section`), `==` is a subsection (`\subsection`), and `===` is a slide/frame (`\begin{frame}{...}`) — only `===` headings become a visible frame title.
+Headings map onto the Beamer document structure: `=` is a section (`\section`) and `==` is a slide/frame (`\begin{frame}{...}`) — pass `slide-level: 3` for a talk that also needs a subsection level (`==` subsection, `===` frame). Plain content under a frame heading needs no wrapper; it becomes a slide automatically, which is why the `content.typ` files in the scratch projects below can stay close to a plain Org-mode export -- only `speaker-note`/`handout-note` (which must differ between the live deck and a handout) and the two special layouts (`two-column-slide`, `full-slide`) are explicit calls.
 
 ## Repo layout
 
 - `basic-theme/` — the Touying theme itself (a Typst package: `typst.toml`, `lib.typ`, logos), the deliverable of this repo.
 - `basicwhite-beamer-theme/` — the original Beamer theme (`.sty` files, sample PDF, logos) this Touying theme replicates, kept for reference.
-- `touying-presentation/` — a scratch Touying project used to test the theme against the Beamer reference; not tracked in git.
+- `touying-presentation/` — a scratch Touying project used to test the theme (with `slide-level: 3`, exercising subsections) against the Beamer reference; not tracked in git.
+- `touying-presentation-no-subsections/` — the same scratch setup, but with the theme's default `slide-level: 2` (no subsections); not tracked in git.
