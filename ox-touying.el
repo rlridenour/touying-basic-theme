@@ -20,7 +20,16 @@
 ;;     blocks -> #two-column-slide[...][...]
 ;;   - #+begin_fullslide ... #+end_fullslide -> #full-slide(...); a
 ;;     lone image link inside becomes
-;;     image("path", width: 100%, height: 100%, fit: "cover").
+;;     image("path", width: 100%, height: 100%, fit: "cover") unless it
+;;     has its own #+ATTR_TOUYING sizing (see below), which is kept
+;;     as-is instead of being forced to fill the slide.
+;;   - #+ATTR_TOUYING: :width ... :height ... :fit ... :align ...
+;;     immediately before an image link, e.g. `#+ATTR_TOUYING: :width
+;;     50%' -> #image("path", width: 50%). `:align' (e.g. `center',
+;;     `center + horizon') wraps the image in #align(...), since
+;;     alignment belongs to the surrounding container in Typst, not to
+;;     image() itself, e.g. `#+ATTR_TOUYING: :height 100% :align
+;;     center' -> #align(center, image("path", height: 100%)).
 ;;   - Bold/italic/code/lists/links get basic Typst equivalents.
 ;;     Tables, footnotes, and other exotic constructs aren't specially
 ;;     handled (falls back to ascii-backend rendering -- touch those
@@ -85,8 +94,24 @@ this derives from silently strips control characters from output.")
                       'ordered)))
     (format "%s %s\n" (if ordered "+" "-") (string-trim (or contents "")))))
 
+(defun rlr/touying--attr-typst-string (value)
+  "Format VALUE from an ATTR_TOUYING attribute as a Typst string.
+`org-export-read-attribute' leaves an already-quoted value's quote
+characters in place (e.g. `:fit \"contain\"' reads back as the string
+literally containing quotes) -- use it as-is in that case rather than
+quoting it again; otherwise quote VALUE."
+  (if (and (stringp value) (string-prefix-p "\"" value) (string-suffix-p "\"" value))
+      value
+    (format "%S" value)))
+
 (defun rlr/touying-link (link contents _info)
-  "Transcode a LINK element into a Typst image call or #link[...]."
+  "Transcode a LINK element into a Typst image call or #link[...].
+An image link honors a preceding `#+ATTR_TOUYING: :width ... :height
+... :fit ... :align ...' keyword: width/height/fit are passed straight
+through as `image()' arguments, e.g. `#+ATTR_TOUYING: :width 50%'.
+`:align' (e.g. `center', `center + horizon') wraps the image in
+`#align(...)', since alignment is a property of the surrounding
+container in Typst, not of `image()' itself."
   (let ((type (org-element-property :type link))
         (path (org-element-property :path link))
         (raw (org-element-property :raw-link link)))
@@ -94,7 +119,21 @@ this derives from silently strips control characters from output.")
      ((and (member type '("file" nil))
            path
            (string-match-p "\\.\\(png\\|jpe?g\\|gif\\|svg\\|webp\\)\\'" path))
-      (format "image(%S)" path))
+      (let* ((attrs (org-export-read-attribute
+                     :attr_touying (org-export-get-parent-element link)))
+             (args (delq nil
+                         (list (format "%S" path)
+                               (when (plist-get attrs :width)
+                                 (format "width: %s" (plist-get attrs :width)))
+                               (when (plist-get attrs :height)
+                                 (format "height: %s" (plist-get attrs :height)))
+                               (when (plist-get attrs :fit)
+                                 (format "fit: %s" (rlr/touying--attr-typst-string
+                                                     (plist-get attrs :fit)))))))
+             (image-call (format "image(%s)" (mapconcat #'identity args ", "))))
+        (if (plist-get attrs :align)
+            (format "#align(%s, %s)" (plist-get attrs :align) image-call)
+          (format "#%s" image-call))))
      (t
       (format "#link(%S)[%s]" raw (if (org-string-nw-p contents) contents raw))))))
 
@@ -127,10 +166,19 @@ this derives from silently strips control characters from output.")
                     (nth 0 parts) (nth 1 parts))
           trimmed)))
      ((string= type "fullslide")
-      (if (string-match "\\`image(\\(.*\\))\\'" trimmed)
-          (format "#full-slide(image(%s, width: 100%%, height: 100%%, fit: \"cover\"))\n\n"
-                  (match-string 1 trimmed))
-        (format "#full-slide[\n%s\n]\n\n" trimmed)))
+      (cond
+       ;; A lone image with no explicit sizing: force it to fill the slide.
+       ;; #image(...)'s leading `#' is dropped -- inside full-slide(...)'s
+       ;; parens we're already in code context, so it isn't needed there.
+       ((and (string-match "\\`#image(\\(.*\\))\\'" trimmed)
+             (not (string-match-p "\\(width\\|height\\|fit\\):" (match-string 1 trimmed))))
+        (format "#full-slide(image(%s, width: 100%%, height: 100%%, fit: \"cover\"))\n\n"
+                (match-string 1 trimmed)))
+       ;; A lone image with its own #+ATTR_TOUYING sizing: respect it as-is.
+       ((string-match "\\`#\\(image(.*)\\)\\'" trimmed)
+        (format "#full-slide(%s)\n\n" (match-string 1 trimmed)))
+       (t
+        (format "#full-slide[\n%s\n]\n\n" trimmed))))
      (t contents))))
 
 (defun rlr/touying-section (_section contents _info)
