@@ -16,6 +16,10 @@
 ;;   - #+begin_handoutnote ... #+end_handoutnote -> #handout-note[...]
 ;;   - @@typst:...@@ export snippets pass through raw -- use
 ;;     @@typst:#pause@@ for a progressive reveal.
+;;   - #+begin_statement ... #+end_statement -> big centered text: both
+;;     axes via align(center + horizon), size via a preceding
+;;     `#+ATTR_TOUYING: :size 3em' (default 2em if omitted). Often
+;;     nested inside #+begin_fullslide for a blank, title-less slide.
 ;;   - #+begin_columns containing two #+begin_column ... #+end_column
 ;;     blocks -> #two-column-slide[...][...]
 ;;   - #+begin_fullslide ... #+end_fullslide -> #full-slide(...); a
@@ -143,7 +147,7 @@ container in Typst, not of `image()' itself."
     (org-element-property :value export-snippet)))
 
 (defun rlr/touying-special-block (special-block contents _info)
-  "Transcode SPECIAL-BLOCK (speakernote/handoutnote/columns/fullslide)."
+  "Transcode SPECIAL-BLOCK (speakernote/handoutnote/columns/fullslide/statement)."
   (let ((type (downcase (or (org-element-property :type special-block) "")))
         (trimmed (string-trim-right (or contents ""))))
     (cond
@@ -151,6 +155,10 @@ container in Typst, not of `image()' itself."
       (format "#speaker-note[\n%s\n]\n\n" trimmed))
      ((string= type "handoutnote")
       (format "#handout-note[\n%s\n]\n\n" trimmed))
+     ((string= type "statement")
+      (let* ((attrs (org-export-read-attribute :attr_touying special-block))
+             (size (or (plist-get attrs :size) "2em")))
+        (format "#align(center + horizon, text(size: %s)[\n%s\n])\n\n" size trimmed)))
      ((string= type "column")
       (concat rlr/touying--column-start trimmed rlr/touying--column-end))
      ((string= type "columns")
