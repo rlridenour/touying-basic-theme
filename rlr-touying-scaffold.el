@@ -225,6 +225,9 @@ hand-editing content.typ."
 #     blocks -> #two-column-slide[...][...]
 #   #+begin_fullslide ... #+end_fullslide -> #full-slide(...); a lone
 #     image link inside becomes a full-bleed image
+#   #+begin_statement ... #+end_statement -> big centered text, sized
+#     via a preceding #+ATTR_TOUYING: :size 3em (default 2em); nest
+#     inside #+begin_fullslide for a blank, title-less statement slide
 "
           title))
 
