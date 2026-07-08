@@ -155,7 +155,7 @@ Most slides are bulleted or numbered lists, but I do sometimes need some layouts
 #+begin_columns
 #+begin_column
   - *Column A*
-      - Text
+  - Text
 #+end_column
 #+begin_column
   - *Column B*

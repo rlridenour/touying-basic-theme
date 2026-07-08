@@ -145,7 +145,7 @@
   let text-block = {
     set align(left)
     set text(fill: self.colors.neutral-darkest)
-    block(below: .5em, text(size: 1.3em, weight: "bold", info.title))
+      block(below: .8em, text(size: 1.3em, weight: "bold", info.title))
     if info.subtitle not in (none, []) {
       block(below: 1em, text(size: .9em, weight: "bold", info.subtitle))
     }

@@ -31,7 +31,7 @@
 // (which has no Touying context and so renders it directly).
 #let presentation-info = (
   title: [Sample Presentation],
-  subtitle: [],
+  subtitle: [Touying Basic Theme],
   author: [Randy Ridenour],
   date: datetime.today(),
   institution: [Department of Philosophy],
