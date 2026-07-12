@@ -93,11 +93,25 @@ this derives from silently strips control characters from output.")
   "Transcode a PLAIN-LIST element, passing its items through."
   contents)
 
+(defun rlr/touying--item-depth (item)
+  "Return ITEM's nesting depth, 0 for a top-level list item.
+Typst list items nest by leading indentation rather than by an explicit
+parent/child structure, so the exporter needs to know how many
+ancestor items ITEM is nested under."
+  (let ((depth 0)
+        (node (org-export-get-parent item)))
+    (while node
+      (when (eq (org-element-type node) 'item)
+        (setq depth (1+ depth)))
+      (setq node (org-export-get-parent node)))
+    depth))
+
 (defun rlr/touying-item (item contents _info)
-  "Transcode an ITEM element into a Typst list item."
-  (let ((ordered (eq (org-element-property :type (org-export-get-parent item))
-                      'ordered)))
-    (format "%s %s\n" (if ordered "+" "-") (string-trim (or contents "")))))
+  "Transcode an ITEM element into a Typst list item, indented by depth."
+  (let* ((ordered (eq (org-element-property :type (org-export-get-parent item))
+                       'ordered))
+         (indent (make-string (* 2 (rlr/touying--item-depth item)) ?\s)))
+    (format "%s%s %s\n" indent (if ordered "+" "-") (string-trim (or contents "")))))
 
 (defun rlr/touying--attr-typst-string (value)
   "Format VALUE from an ATTR_TOUYING attribute as a Typst string.
