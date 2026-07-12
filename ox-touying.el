@@ -14,6 +14,7 @@
 ;;     config.typ, not by this exporter.
 ;;   - #+begin_speakernote ... #+end_speakernote -> #speaker-note[...]
 ;;   - #+begin_handoutnote ... #+end_handoutnote -> #handout-note[...]
+;;   - #+begin_center ... #+end_center -> #align(center)[...]
 ;;   - @@typst:...@@ export snippets pass through raw -- use
 ;;     @@typst:#pause@@ for a progressive reveal.
 ;;   - #+begin_statement ... #+end_statement -> big centered text: both
@@ -189,6 +190,13 @@ container in Typst, not of `image()' itself."
         (format "#full-slide[\n%s\n]\n\n" trimmed))))
      (t contents))))
 
+(defun rlr/touying-center-block (_center-block contents _info)
+  "Transcode a CENTER-BLOCK element into a horizontally centered Typst block.
+`#+begin_center'/`#+end_center' produces Org's own `center-block' element
+type, distinct from the generic `special-block' used by speakernote/
+handoutnote/etc, so it needs its own entry here."
+  (format "#align(center)[\n%s\n]\n\n" (string-trim-right (or contents ""))))
+
 (defun rlr/touying-section (_section contents _info)
   "Transcode a SECTION element, passing its content through."
   contents)
@@ -234,6 +242,7 @@ container in Typst, not of `image()' itself."
 (org-export-define-derived-backend 'touying 'ascii
   :translate-alist
   '((bold . rlr/touying-bold)
+    (center-block . rlr/touying-center-block)
     (code . rlr/touying-code)
     (export-snippet . rlr/touying-export-snippet)
     (headline . rlr/touying-headline)
