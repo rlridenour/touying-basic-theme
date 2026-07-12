@@ -41,13 +41,14 @@ Headings map onto the Beamer document structure: `=` is a section (`\section`) a
 
 ## Authoring slides in Org mode
 
-`ox-touying.el` is a custom Org export backend that generates a working `content.typ` from a `talk.org` file, so a talk's content can be written once in Org and re-exported instead of hand-written as Typst. `M-x rlr/new-touying-presentation` (see `rlr-touying-scaffold.el`) scaffolds a new presentation's `talk.org` alongside `config.typ` and the slides/handout entry points, generating an initial `content.typ` from it automatically. After that, edit `talk.org` and re-export with `M-x rlr/org-export-to-touying-content` any time it changes -- don't hand-edit the generated `content.typ`, since re-exporting overwrites it.
+`ox-touying.el` is a custom Org export backend that generates a working `content.typ` from a `talk.org` file, so a talk's content can be written once in Org and re-exported instead of hand-written as Typst. `M-x rlr/new-touying-presentation` (see `rlr-touying-scaffold.el`) scaffolds a new presentation's `talk.org` alongside `config.typ` and the slides/handout entry points, generating an initial `content.typ` from it automatically. Like the slides/handout entry points, the scaffolded `talk.org` is named with the presentation's slug prefix (e.g. `my-talk-talk.org`), so it's identifiable by filename alone rather than being one of many identically-named `talk.org` files when searching across presentation directories. After that, edit `talk.org` and re-export with `M-x rlr/org-export-to-touying-content` any time it changes -- don't hand-edit the generated `content.typ`, since re-exporting overwrites it.
 
 Conventions:
 
 - Headline depth maps 1:1 onto Typst heading depth (`*` -> `=`, `**` -> `==`, `***` -> `===`); plain body text under a heading needs no wrapper, exactly as in `content.typ` directly. Whether `==` is a frame or a subsection depends on the presentation's own `slide-level` in `config.typ`, not on the exporter.
 - `#+begin_speakernote ... #+end_speakernote` → `#speaker-note[...]`
 - `#+begin_handoutnote ... #+end_handoutnote` → `#handout-note[...]`
+- `#+begin_center ... #+end_center` → `#align(center)[...]`
 - `@@typst:...@@` export snippets pass straight through as raw Typst — use `@@typst:#pause@@` for a progressive reveal.
 - `#+begin_columns` containing two `#+begin_column ... #+end_column` blocks → `#two-column-slide[...][...]`
 - `#+begin_fullslide ... #+end_fullslide` → `#full-slide(...)`. A lone image link inside becomes a full-bleed image (`width: 100%, height: 100%, fit: "cover"`) unless it has its own `#+ATTR_TOUYING` sizing (see below), which is kept as-is instead of being forced to fill the slide.
