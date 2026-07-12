@@ -41,10 +41,57 @@
 /// `config-info(logo: school-logo())`.
 #let school-logo(width: 90%) = image("logos/school.png", width: width)
 
+// Detect a plain `#pause` marker (equivalent to `jump(1, relative: true)`)
+// -- the only pause/jump/meanwhile variant slide authors have access to
+// via content.typ's `pause` parameter, so it's the only one `slide()`
+// needs to recognize when reserving space for it (see `_reserve-pauses`).
+#let _is-simple-pause(child) = (
+  type(child) == content
+    and child.func() == metadata
+    and type(child.value) == dictionary
+    and child.value.at("kind", default: none) == "touying-jump/pause/meanwhile"
+    and child.value.at("relative", default: false) == true
+    and child.value.at("n", default: 0) == 1
+)
+
+// Rewrite BODY so each top-level `#pause` becomes a boundary between
+// `uncover(...)`-wrapped chunks instead of touying's own default pause
+// handling. Plain `#pause` reveals later content by simply omitting it on
+// earlier subslides -- no space is reserved, so a shorter,
+// partially-revealed body would center at a different vertical position
+// than the final, fully-revealed one. `uncover` reserves space for hidden
+// content (like `#hide()`), so wrapping each post-pause chunk in it keeps
+// the body's total height -- and therefore its centered position -- fixed
+// across the whole reveal sequence (see `slide()`'s composer).
+#let _reserve-pauses(body) = {
+  let children = if utils.is-sequence(body) { body.children } else { (body,) }
+  let chunks = ((),)
+  for child in children {
+    if _is-simple-pause(child) {
+      chunks.push(())
+    } else {
+      chunks.last().push(child)
+    }
+  }
+  if chunks.len() == 1 {
+    return body
+  }
+  chunks
+    .enumerate()
+    .map(((i, parts)) => {
+      let chunk-body = parts.sum(default: [])
+      if i == 0 { chunk-body } else { uncover(str(i + 1) + "-", chunk-body) }
+    })
+    .sum()
+}
+
 /// Default slide function. The frame title (the current level-3
 /// heading) is shown bold at the top of the slide body via
 /// `subslide-preamble` -- there is no separate header/footer chrome,
-/// mirroring the Beamer theme's plain `frametitle` template.
+/// mirroring the Beamer theme's plain `frametitle` template. The body
+/// below the title is centered vertically in the remaining space
+/// (`#pause` reveals are handled so already-revealed content doesn't
+/// shift position as more of the body appears -- see `_reserve-pauses`).
 #let slide(
   config: (:),
   repeat: auto,
@@ -57,13 +104,30 @@
     config-page(header: none, footer: none),
     config-common(subslide-preamble: self.store.subslide-preamble),
   )
+  let vertical-composer(..args) = {
+    let effective-composer = if composer != auto {
+      composer
+    } else {
+      self.at("default-composer", default: auto)
+    }
+    let composed = if type(effective-composer) == function {
+      effective-composer(..args)
+    } else {
+      components.cols(
+        lazy-layout: false,
+        columns: effective-composer,
+        ..args,
+      )
+    }
+    align(horizon, composed)
+  }
   touying-slide(
     self: self,
     config: config,
     repeat: repeat,
     setting: setting,
-    composer: composer,
-    ..bodies,
+    composer: vertical-composer,
+    ..bodies.pos().map(_reserve-pauses),
   )
 })
 
