@@ -412,8 +412,8 @@
           size: 25pt,
           fill: self.colors.neutral-darkest,
         )
-        set list(marker: [•])
-          set enum(numbering: "1.a.i.")
+        set list(marker: [•], spacing: 1em, body-indent: 1em)
+        set enum(numbering: "1.a.i.", spacing: 1em, body-indent: 1em)
         show footnote.entry: set text(size: .6em)
         body
       },
