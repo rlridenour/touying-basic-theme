@@ -24,14 +24,26 @@
 
 (require 'seq)
 
+(defvar rlr/touying-slug-stopwords
+  '("a" "an" "the"
+    "and" "but" "or" "nor" "for" "so" "yet"
+    "in" "on" "at" "of" "to" "from" "by" "as" "with"
+    "into" "onto" "upon" "over" "under" "about" "above" "below"
+    "after" "before" "between" "among" "against" "through" "during"
+    "without" "within" "per" "via")
+  "Words dropped when generating a slug from a title.")
+
 (defun rlr/touying-slugify (title)
   "Build a lowercase, hyphenated filename slug from TITLE.
-Words of two letters or fewer, and the words \"the\" and \"and\", are
-dropped."
+Words of two letters or fewer, and words in
+`rlr/touying-slug-stopwords', are dropped, unless the word is all
+numerals (e.g. \"1\"), which is always kept."
   (let ((words (split-string (downcase title) "[^a-z0-9]+" t)))
     (mapconcat #'identity
-               (seq-filter (lambda (w) (and (> (length w) 2)
-                                            (not (member w '("the" "and")))))
+               (seq-filter (lambda (w)
+                             (or (string-match-p "\\`[0-9]+\\'" w)
+                                 (and (> (length w) 2)
+                                      (not (member w rlr/touying-slug-stopwords)))))
                            words)
                "-")))
 
