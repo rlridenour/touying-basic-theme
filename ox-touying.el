@@ -36,9 +36,11 @@
 ;;     image() itself, e.g. `#+ATTR_TOUYING: :height 100% :align
 ;;     center' -> #align(center, image("path", height: 100%)).
 ;;   - Bold/italic/code/lists/links get basic Typst equivalents.
-;;     Tables, footnotes, and other exotic constructs aren't specially
-;;     handled (falls back to ascii-backend rendering -- touch those
-;;     up by hand in content.typ afterward).
+;;   - An Org table -> #table(columns: N, [cell], [cell], ...). The
+;;     header row (the row group before the table's first hline, if
+;;     any) is rendered in bold. Column widths, alignment, and other
+;;     exotic constructs (footnotes, etc.) aren't specially handled --
+;;     touch those up by hand in content.typ afterward.
 ;;
 ;; Usage: open the presentation's talk.org (in the same directory as
 ;; config.typ/content.typ), M-x rlr/org-export-to-touying-content --
@@ -112,6 +114,31 @@ ancestor items ITEM is nested under."
                        'ordered))
          (indent (make-string (* 2 (rlr/touying--item-depth item)) ?\s)))
     (format "%s%s %s\n" indent (if ordered "+" "-") (string-trim (or contents "")))))
+
+(defun rlr/touying-table-cell (table-cell contents info)
+  "Transcode a TABLE-CELL element into a Typst table cell literal.
+Cells in the table's header row (the first row group, delimited by an
+hline) are rendered in bold."
+  (let ((text (string-trim (or contents ""))))
+    (format "[%s], "
+            (if (org-export-table-row-in-header-p
+                 (org-export-get-parent table-cell) info)
+                (format "*%s*" text)
+              text))))
+
+(defun rlr/touying-table-row (table-row contents _info)
+  "Transcode a TABLE-ROW element into one line of Typst table cells.
+Rule rows (hlines) carry no cells of their own and produce no output;
+the header/body split they mark is instead recovered via
+`org-export-table-row-in-header-p' in `rlr/touying-table-cell'."
+  (unless (eq (org-element-property :type table-row) 'rule)
+    (concat (string-trim-right contents) "\n")))
+
+(defun rlr/touying-table (table contents info)
+  "Transcode a TABLE element into a Typst #table(...) call.
+Column count comes from the table's own dimensions."
+  (let ((columns (cdr (org-export-table-dimensions table info))))
+    (format "#table(\n  columns: %d,\n%s)\n\n" (max columns 1) contents)))
 
 (defun rlr/touying--attr-typst-string (value)
   "Format VALUE from an ATTR_TOUYING attribute as a Typst string.
@@ -269,6 +296,9 @@ handoutnote/etc, so it needs its own entry here."
     (section . rlr/touying-section)
     (special-block . rlr/touying-special-block)
     (src-block . rlr/touying-src-block)
+    (table . rlr/touying-table)
+    (table-cell . rlr/touying-table-cell)
+    (table-row . rlr/touying-table-row)
     (template . rlr/touying-template)
     (verbatim . rlr/touying-verbatim))
   :menu-entry

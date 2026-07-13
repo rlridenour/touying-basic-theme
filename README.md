@@ -54,7 +54,8 @@ Conventions:
 - `#+begin_fullslide ... #+end_fullslide` → `#full-slide(...)`. A lone image link inside becomes a full-bleed image (`width: 100%, height: 100%, fit: "cover"`) unless it has its own `#+ATTR_TOUYING` sizing (see below), which is kept as-is instead of being forced to fill the slide.
 - `#+begin_statement ... #+end_statement` → big centered text (`align(center + horizon, text(size: ...)[...])`), sized via a preceding `#+ATTR_TOUYING: :size ...` (default `2em`). Nest inside `#+begin_fullslide` for a blank, title-less statement slide, or leave it standalone under a heading to keep the frame title.
 - An image link honors a preceding `#+ATTR_TOUYING: :width ... :height ... :fit ... :align ...`, e.g. `#+ATTR_TOUYING: :width 50%`. `:align` (e.g. `center`, `center + horizon`) wraps the image in `#align(...)`, since alignment is a property of the surrounding container in Typst, not of `image()` itself.
-- Bold/italic/code/lists/links get basic Typst equivalents. Tables, footnotes, and other exotic constructs aren't specially handled (they fall back to plain ascii-backend rendering) -- expect to touch those up by hand in `content.typ` afterward.
+- Bold/italic/code/lists/links get basic Typst equivalents.
+- An Org table → `#table(columns: N, [cell], [cell], ...)`. The header row (the row group before the table's first hline, if any) is rendered in bold. Column widths, alignment, footnotes, and other exotic constructs aren't specially handled -- expect to touch those up by hand in `content.typ` afterward.
 
 Example:
 
