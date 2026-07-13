@@ -65,7 +65,7 @@ SLUG names the corresponding slides/handout files in the comments."
 #import \"@local/basic-theme:0.1.0\": (
   basic-theme,
   basic-theme-date-format,
-  univ-logo,
+  school-logo,
   title-slide as live-title-slide,
   pause as live-pause,
   speaker-note as live-speaker-note,
@@ -99,7 +99,7 @@ SLUG names the corresponding slides/handout files in the comments."
     ),
     config-info(
       ..presentation-info,
-      logo: univ-logo(),
+      logo: school-logo(),
     ),
   )
 
