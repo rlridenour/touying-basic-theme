@@ -408,8 +408,9 @@
       init: (self: none, body) => {
         // Beamer's default font theme is sans-serif; match it here.
         set text(
-          font: ("Helvetica Neue", "Arial", "Fira Sans", "DejaVu Sans"),
+          font: ("SF Pro", "Helvetica Neue", "Arial", "Fira Sans", "DejaVu Sans"),
           size: 25pt,
+            weight: "medium",
           fill: self.colors.neutral-darkest,
         )
         set list(marker: [•], spacing: 1em, indent: 1em)
