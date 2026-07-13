@@ -166,7 +166,14 @@
 /// - fill (color, none, auto): The slide's background fill, useful as
 ///   letterboxing behind a graphic that doesn't cover the full frame.
 ///   Default is `auto`, which keeps the theme's current variant background.
-#let full-slide(config: (:), fill: auto, body) = touying-slide-wrapper(self => {
+///
+/// - bleed (boolean): Has no effect here -- a live slide is always
+///   exactly the physical page size regardless. Accepted only so the
+///   same call works against a Touying handout's own full-slide
+///   stand-in, where bleed: false skips bounding the body in an
+///   image-sized box (appropriate for non-graphic content, like a
+///   short centered statement, that doesn't need it). Default is `true`.
+#let full-slide(config: (:), fill: auto, bleed: true, body) = touying-slide-wrapper(self => {
   let page-args = (margin: 0pt, header: none, footer: none)
   if fill != auto {
     page-args.fill = fill

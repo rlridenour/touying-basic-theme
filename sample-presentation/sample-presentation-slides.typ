@@ -10,6 +10,7 @@
   live-handout-note,
   live-two-column-slide,
   live-full-slide,
+  live-statement,
 )
 #import "content.typ": content
 
@@ -22,4 +23,5 @@
   live-handout-note,
   live-two-column-slide,
   live-full-slide,
+  live-statement,
 )

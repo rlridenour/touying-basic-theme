@@ -12,6 +12,7 @@
   handout-note,
   handout-two-column-slide,
   handout-full-slide,
+  handout-statement,
 )
 #import "content.typ": content
 
@@ -24,4 +25,5 @@
   handout-note,
   handout-two-column-slide,
   handout-full-slide,
+  handout-statement,
 )

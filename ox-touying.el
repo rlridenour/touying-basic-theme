@@ -25,17 +25,26 @@
 ;;     top-of-file keyword: `#+TOUYING_IMPORT: "@local/standard-form:0.2.0": *'
 ;;     -- this becomes a `#import ...' line at the top of the
 ;;     generated content.typ.
-;;   - #+begin_statement ... #+end_statement -> big centered text: both
-;;     axes via align(center + horizon), size via a preceding
-;;     `#+ATTR_TOUYING: :size 3em' (default 2em if omitted). Often
-;;     nested inside #+begin_fullslide for a blank, title-less slide.
+;;   - #+begin_statement ... #+end_statement -> #statement(size:
+;;     ...)[...], size via a preceding `#+ATTR_TOUYING: :size 3em'
+;;     (default 2em if omitted). Threaded through content() as a
+;;     parameter (like two-column-slide/full-slide) so the live deck
+;;     can center it on both axes (align(center + horizon)) while the
+;;     handout centers it horizontally only -- horizon-centering in a
+;;     flowing document expands to fill the whole rest of the page,
+;;     wasting paper. Often nested inside #+begin_fullslide for a
+;;     blank, title-less slide.
 ;;   - #+begin_columns containing two #+begin_column ... #+end_column
 ;;     blocks -> #two-column-slide[...][...]
 ;;   - #+begin_fullslide ... #+end_fullslide -> #full-slide(...); a
 ;;     lone image link inside becomes
 ;;     image("path", width: 100%, height: 100%, fit: "cover") unless it
 ;;     has its own #+ATTR_TOUYING sizing (see below), which is kept
-;;     as-is instead of being forced to fill the slide.
+;;     as-is instead of being forced to fill the slide. A lone
+;;     statement instead becomes #full-slide(bleed: false)[...] --
+;;     bleed: false tells the handout to render it plainly rather than
+;;     inside the image-sized bounding box, which would otherwise waste
+;;     a lot of paper under a single line of text.
 ;;   - #+ATTR_TOUYING: :width ... :height ... :fit ... :align ...
 ;;     immediately before an image link, e.g. `#+ATTR_TOUYING: :width
 ;;     50%' -> #image("path", width: 50%). `:align' (e.g. `center',
@@ -229,7 +238,7 @@ how such a package actually gets imported into content.typ."
      ((string= type "statement")
       (let* ((attrs (org-export-read-attribute :attr_touying special-block))
              (size (or (plist-get attrs :size) "2em")))
-        (format "#align(center + horizon, text(size: %s)[\n%s\n])\n\n" size trimmed)))
+        (format "#statement(size: %s)[\n%s\n]\n\n" size trimmed)))
      ((string= type "column")
       (concat rlr/touying--column-start trimmed rlr/touying--column-end))
      ((string= type "columns")
@@ -256,6 +265,13 @@ how such a package actually gets imported into content.typ."
        ;; A lone image with its own #+ATTR_TOUYING sizing: respect it as-is.
        ((string-match "\\`#\\(image(.*)\\)\\'" trimmed)
         (format "#full-slide(%s)\n\n" (match-string 1 trimmed)))
+       ;; A lone statement: it already centers itself and, unlike a
+       ;; graphic, has no percentage-based sizing that needs bounding --
+       ;; bleed: false tells the handout not to put it in full-slide's
+       ;; image-sized box, which would leave a large empty gap below a
+       ;; single line of text.
+       ((string-prefix-p "#statement(" trimmed)
+        (format "#full-slide(bleed: false)[\n%s\n]\n\n" trimmed))
        (t
         (format "#full-slide[\n%s\n]\n\n" trimmed))))
      (t contents))))
@@ -303,8 +319,8 @@ or the slides/handout entry points."
 //
 // Plain content under a heading needs no wrapper; only speaker-note/
 // handout-note (which must differ between the live deck and the
-// handout) and the two special layouts (two-column-slide, full-slide)
-// are explicit calls.
+// handout) and the three special layouts (two-column-slide, full-slide,
+// statement) are explicit calls.
 //
 // Generated from an Org source file by ox-touying.el -- re-export
 // rather than hand-editing, or hand-edits will be overwritten.
@@ -316,6 +332,7 @@ or the slides/handout entry points."
   handout-note,
   two-column-slide,
   full-slide,
+  statement,
 ) = [
   #title-slide()
 

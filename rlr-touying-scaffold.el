@@ -62,9 +62,9 @@ SLUG names the corresponding slides/handout files in the comments."
 // the continuous handout (%1$s-handout.typ).
 //
 // content.typ defines its content as a function that takes title-slide/
-// pause/speaker-note/handout-note/two-column-slide/full-slide as
-// parameters -- plain body content under a heading needs no wrapper at
-// all; Touying automatically turns it into a slide when the theme's
+// pause/speaker-note/handout-note/two-column-slide/full-slide/statement
+// as parameters -- plain body content under a heading needs no wrapper
+// at all; Touying automatically turns it into a slide when the theme's
 // slide-fn is registered (see basic-theme.with(...) below), which keeps
 // content.typ close to a plain Org-mode export. Each entry point below
 // supplies its own implementations of the remaining parameters:
@@ -118,6 +118,10 @@ SLUG names the corresponding slides/handout files in the comments."
   body
 }
 
+// Big centered text for #+begin_statement -- both axes via
+// align(center + horizon), since a live slide is a fixed-size page.
+#let live-statement(size: 2em, body) = align(center + horizon, text(size: size, body))
+
 // Handout notes never show on the live deck.
 #let live-handout-note(body) = none
 
@@ -169,8 +173,24 @@ SLUG names the corresponding slides/handout files in the comments."
 // There's no full-bleed page in a flowing document, and a `100%%` height
 // inside body would otherwise resolve against the whole rest of the
 // page -- bound it to a fixed-height box instead, so the graphic shows
-// inline at a sane size.
-#let handout-full-slide(fill: auto, body) = box(width: 100%%, height: 300pt, clip: true, body)
+// inline at a sane size. bleed: false opts out of that box for
+// non-graphic content (e.g. a #+begin_statement nested inside
+// #+begin_fullslide) that doesn't need it and would otherwise sit in a
+// mostly-empty box, wasting paper.
+#let handout-full-slide(fill: auto, bleed: true, body) = if bleed {
+  box(width: 100%%, height: 300pt, clip: true, body)
+} else {
+  body
+}
+
+// Same reasoning as handout-full-slide: align(..., horizon, ...) would
+// expand to fill the whole rest of the page in a flowing document,
+// leaving a lot of blank space above and below the text and wasting
+// paper. Center horizontally only, with no added vertical spacing --
+// ordinary block spacing (same as a plain paragraph) is enough, and an
+// explicit v() here would stack on top of the next heading's own
+// above-spacing and look doubled.
+#let handout-statement(size: 2em, body) = align(center, text(size: size, body))
 
 // A handout note is reader-only context that never appeared on the live
 // slide -- a line above it marks that boundary, so it's clear the text
@@ -196,8 +216,8 @@ hand-editing this file."
 //
 // Plain content under a heading needs no wrapper; only speaker-note/
 // handout-note (which must differ between the live deck and the
-// handout) and the two special layouts (two-column-slide, full-slide)
-// are explicit calls.
+// handout) and the three special layouts (two-column-slide, full-slide,
+// statement) are explicit calls.
 //
 // This is a placeholder -- ox-touying.el wasn't loaded when this
 // presentation was scaffolded, so content.typ could not be generated
@@ -211,6 +231,7 @@ hand-editing this file."
   handout-note,
   two-column-slide,
   full-slide,
+  statement,
 ) = [
   #title-slide()
 
@@ -240,8 +261,11 @@ hand-editing content.typ."
 #   #+begin_fullslide ... #+end_fullslide -> #full-slide(...); a lone
 #     image link inside becomes a full-bleed image
 #   #+begin_statement ... #+end_statement -> big centered text, sized
-#     via a preceding #+ATTR_TOUYING: :size 3em (default 2em); nest
-#     inside #+begin_fullslide for a blank, title-less statement slide
+#     via a preceding #+ATTR_TOUYING: :size 3em (default 2em); centered
+#     on both axes on the live deck, horizontally only in the handout
+#     (to save paper); nest inside #+begin_fullslide for a blank,
+#     title-less statement slide (the handout skips full-slide's
+#     image-sized box in this case, since a line of text doesn't need it)
 "
           title))
 
@@ -259,6 +283,7 @@ hand-editing content.typ."
   live-handout-note,
   live-two-column-slide,
   live-full-slide,
+  live-statement,
 )
 #import \"content.typ\": content
 
@@ -271,6 +296,7 @@ hand-editing content.typ."
   live-handout-note,
   live-two-column-slide,
   live-full-slide,
+  live-statement,
 )
 "
           slug))
@@ -291,6 +317,7 @@ hand-editing content.typ."
   handout-note,
   handout-two-column-slide,
   handout-full-slide,
+  handout-statement,
 )
 #import \"content.typ\": content
 
@@ -303,6 +330,7 @@ hand-editing content.typ."
   handout-note,
   handout-two-column-slide,
   handout-full-slide,
+  handout-statement,
 )
 "
           slug))

@@ -145,6 +145,12 @@ heading's title simply isn't shown on this particular slide. Pass
 frame -- by default the fill is `auto`, which keeps the theme's
 current variant background.
 
+`bleed:` (default `true`) has no effect here -- it's accepted only so
+the same call also works against a Touying handout's own `full-slide`
+stand-in (see the main repo's `ox-touying.el`), where `bleed: false`
+skips bounding non-graphic content (e.g. a short centered statement)
+in an image-sized box it doesn't need.
+
 ## Logos
 
 `univ-logo(width: 90%)` and `school-logo(width: 90%)` return the two

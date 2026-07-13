@@ -3,9 +3,9 @@
 // the continuous handout (sample-presentation-handout.typ).
 //
 // content.typ defines its content as a function that takes title-slide/
-// pause/speaker-note/handout-note/two-column-slide/full-slide as
-// parameters -- plain body content under a heading needs no wrapper at
-// all; Touying automatically turns it into a slide when the theme's
+// pause/speaker-note/handout-note/two-column-slide/full-slide/statement
+// as parameters -- plain body content under a heading needs no wrapper
+// at all; Touying automatically turns it into a slide when the theme's
 // slide-fn is registered (see basic-theme.with(...) below), which keeps
 // content.typ close to a plain Org-mode export. Each entry point below
 // supplies its own implementations of the remaining parameters:
@@ -59,6 +59,10 @@
   body
 }
 
+// Big centered text for #+begin_statement -- both axes via
+// align(center + horizon), since a live slide is a fixed-size page.
+#let live-statement(size: 2em, body) = align(center + horizon, text(size: size, body))
+
 // Handout notes never show on the live deck.
 #let live-handout-note(body) = none
 
@@ -110,8 +114,24 @@
 // There's no full-bleed page in a flowing document, and a `100%` height
 // inside body would otherwise resolve against the whole rest of the
 // page -- bound it to a fixed-height box instead, so the graphic shows
-// inline at a sane size.
-#let handout-full-slide(fill: auto, body) = box(width: 100%, height: 300pt, clip: true, body)
+// inline at a sane size. bleed: false opts out of that box for
+// non-graphic content (e.g. a #+begin_statement nested inside
+// #+begin_fullslide) that doesn't need it and would otherwise sit in a
+// mostly-empty box, wasting paper.
+#let handout-full-slide(fill: auto, bleed: true, body) = if bleed {
+  box(width: 100%, height: 300pt, clip: true, body)
+} else {
+  body
+}
+
+// Same reasoning as handout-full-slide: align(..., horizon, ...) would
+// expand to fill the whole rest of the page in a flowing document,
+// leaving a lot of blank space above and below the text and wasting
+// paper. Center horizontally only, with no added vertical spacing --
+// ordinary block spacing (same as a plain paragraph) is enough, and an
+// explicit v() here would stack on top of the next heading's own
+// above-spacing and look doubled.
+#let handout-statement(size: 2em, body) = align(center, text(size: size, body))
 
 // A handout note is reader-only context that never appeared on the live
 // slide -- a line above it marks that boundary, so it's clear the text

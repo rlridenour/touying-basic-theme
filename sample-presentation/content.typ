@@ -5,8 +5,8 @@
 //
 // Plain content under a heading needs no wrapper; only speaker-note/
 // handout-note (which must differ between the live deck and the
-// handout) and the two special layouts (two-column-slide, full-slide)
-// are explicit calls.
+// handout) and the three special layouts (two-column-slide, full-slide,
+// statement) are explicit calls.
 //
 // Generated from an Org source file by ox-touying.el -- re-export
 // rather than hand-editing, or hand-edits will be overwritten.
@@ -18,6 +18,7 @@
   handout-note,
   two-column-slide,
   full-slide,
+  statement,
 ) = [
   #title-slide()
 
@@ -102,9 +103,9 @@ Files four and five have names that are made from the presentation title. This m
 == Writing Content
 
 - Headings
-- Level 1: sections
-- Level 2: subsections or slide titles
-- Level 3: slide titles
+  - Level 1: sections
+  - Level 2: subsections or slide titles
+  - Level 3: slide titles
 - Other text: slide content
 
 #speaker-note[
@@ -128,9 +129,9 @@ As in Beamer, this essentially produces separate slides. It is especially useful
 == Layout Blocks
 
 - Used for special cases
-- Two-column slides
-- Full frame slides with no titles
-- Slides with a short main point centered in the slide
+  - Two-column slides
+  - Full frame slides with no titles
+  - Slides with a short main point centered in the slide
 
 #speaker-note[
 Code examples for each are included in the handout.
@@ -214,10 +215,10 @@ The same `#+ATTR_TOUYING:` mechanism works on any image, full-bleed or not;  `:w
 
 == Main Point Slides
 
-#full-slide[
-#align(center + horizon, text(size: 2em)[
+#full-slide(bleed: false)[
+#statement(size: 2em)[
 *Main Point Slides*
-])
+]
 ]
 
 #speaker-note[
@@ -245,9 +246,9 @@ frame's title showing above it.
 == Compiling
 
 - Options
-- `typst compile` shell command
-- `Custom shell command`
-- Emacs function
+  - `typst compile` shell command
+  - `Custom shell command`
+  - Emacs function
 
 #speaker-note[
 Code is included in the handout.
@@ -287,7 +288,7 @@ function compile-touying-deck --description 'typst compile the *slides.typ and *
     for file in $files
         echo "Compiling $file..."
         if not typst compile $file
-            set failed 1
+          set failed 1
         end
     end
     wait
@@ -320,9 +321,9 @@ The slide deck paginates normally, respects the progressive reveals, and shows s
 
 == Github Repository
 
-#align(center + horizon, text(size: 2.5em)[
+#statement(size: 2.5em)[
 #link("https://github.com/rlridenour/touying-basic-theme")[Link Here!]
-])
+]
 
 #speaker-note[
 #link("https://github.com/rlridenour/touying-basic-theme")[https://github.com/rlridenour/touying-basic-theme]
