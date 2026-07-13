@@ -17,6 +17,14 @@
 ;;   - #+begin_center ... #+end_center -> #align(center)[...]
 ;;   - @@typst:...@@ export snippets pass through raw -- use
 ;;     @@typst:#pause@@ for a progressive reveal.
+;;   - #+begin_export typst ... #+end_export blocks pass through raw
+;;     too, for multi-line Typst or calls into another local package
+;;     (e.g. @local/standard-form:0.2.0). Since content.typ is its own
+;;     Typst module, such a package can't be imported from config.typ
+;;     the way basic-theme is -- instead add, once per package, a
+;;     top-of-file keyword: `#+TOUYING_IMPORT: "@local/standard-form:0.2.0": *'
+;;     -- this becomes a `#import ...' line at the top of the
+;;     generated content.typ.
 ;;   - #+begin_statement ... #+end_statement -> big centered text: both
 ;;     axes via align(center + horizon), size via a preceding
 ;;     `#+ATTR_TOUYING: :size 3em' (default 2em if omitted). Often
@@ -35,7 +43,8 @@
 ;;     alignment belongs to the surrounding container in Typst, not to
 ;;     image() itself, e.g. `#+ATTR_TOUYING: :height 100% :align
 ;;     center' -> #align(center, image("path", height: 100%)).
-;;   - Bold/italic/code/lists/links get basic Typst equivalents.
+;;   - Bold/italic/underline/code/lists/links get basic Typst
+;;     equivalents.
 ;;   - An Org table -> #table(columns: N, [cell], [cell], ...). The
 ;;     header row (the row group before the table's first hline, if
 ;;     any) is rendered in bold. Column widths, alignment, and other
@@ -72,6 +81,13 @@ this derives from silently strips control characters from output.")
 (defun rlr/touying-italic (_italic contents _info)
   "Transcode an ITALIC element into Typst emphasis."
   (format "_%s_" contents))
+
+(defun rlr/touying-underline (_underline contents _info)
+  "Transcode an UNDERLINE element into Typst underline markup.
+Needs its own entry rather than falling back to the ascii backend:
+ascii's underline transcoder also formats as `_%s_', which in Typst
+is italic emphasis, not underline."
+  (format "#underline[%s]" contents))
 
 (defun rlr/touying-code (code _contents _info)
   "Transcode a CODE element into a Typst raw span."
@@ -128,17 +144,21 @@ hline) are rendered in bold."
 
 (defun rlr/touying-table-row (table-row contents _info)
   "Transcode a TABLE-ROW element into one line of Typst table cells.
-Rule rows (hlines) carry no cells of their own and produce no output;
-the header/body split they mark is instead recovered via
-`org-export-table-row-in-header-p' in `rlr/touying-table-cell'."
-  (unless (eq (org-element-property :type table-row) 'rule)
+Rule rows (hlines) carry no cells of their own; they're rendered as an
+explicit `table.hline()' instead, since `rlr/touying-table' drops the
+table's default per-cell grid lines (`stroke: none') and this is how
+an hline actually present in the source Org table is kept."
+  (if (eq (org-element-property :type table-row) 'rule)
+      "table.hline(),\n"
     (concat (string-trim-right contents) "\n")))
 
 (defun rlr/touying-table (table contents info)
   "Transcode a TABLE element into a Typst #table(...) call.
-Column count comes from the table's own dimensions."
+Column count comes from the table's own dimensions. Per-cell borders
+are dropped (`stroke: none'); only hlines present in the source Org
+table are kept, via `table.hline()' in `rlr/touying-table-row'."
   (let ((columns (cdr (org-export-table-dimensions table info))))
-    (format "#table(\n  columns: %d,\n%s)\n\n" (max columns 1) contents)))
+    (format "#table(\n  columns: %d,\n  stroke: none,\n%s)\n\n" (max columns 1) contents)))
 
 (defun rlr/touying--attr-typst-string (value)
   "Format VALUE from an ATTR_TOUYING attribute as a Typst string.
@@ -182,6 +202,15 @@ container in Typst, not of `image()' itself."
           (format "#%s" image-call))))
      (t
       (format "#link(%S)[%s]" raw (if (org-string-nw-p contents) contents raw))))))
+
+(defun rlr/touying-export-block (export-block _contents _info)
+  "Pass a `#+begin_export typst ... #+end_export' EXPORT-BLOCK through raw.
+Lets talk.org call arbitrary Typst directly -- e.g. a function from a
+local package like @local/standard-form:0.2.0 -- the same way it would
+in a plain Org-to-Typst export; see `rlr/touying--collect-imports' for
+how such a package actually gets imported into content.typ."
+  (when (string= (org-element-property :type export-block) "TYPST")
+    (org-element-property :value export-block)))
 
 (defun rlr/touying-export-snippet (export-snippet _contents _info)
   "Pass an @@typst:...@@ EXPORT-SNIPPET through raw."
@@ -248,10 +277,25 @@ handoutnote/etc, so it needs its own entry here."
         (title (org-export-data (org-element-property :title headline) info)))
     (concat (make-string level ?=) " " title "\n\n" (or contents ""))))
 
+(defun rlr/touying--collect-imports (info)
+  "Return the content.typ import lines requested by #+TOUYING_IMPORT keywords.
+Each `#+TOUYING_IMPORT: \"@local/pkg:0.1.0\": *' keyword becomes an
+`#import \"@local/pkg:0.1.0\": *' line at the top of the generated
+content.typ, so raw Typst calls in an export block (e.g. into a local
+package like @local/standard-form:0.2.0) resolve -- content.typ is its
+own Typst module, so such an import can't instead live in config.typ
+or the slides/handout entry points."
+  (org-element-map (plist-get info :parse-tree) 'keyword
+    (lambda (kw)
+      (when (string= (org-element-property :key kw) "TOUYING_IMPORT")
+        (format "#import %s\n" (org-element-property :value kw))))
+    info))
+
 (defun rlr/touying-template (contents info)
   "Wrap the transcoded document CONTENTS in a content.typ file."
   (let ((title (org-export-data (plist-get info :title) info))
-        (contents (replace-regexp-in-string "\n\\(\n+\\)" "\n\n" contents)))
+        (contents (replace-regexp-in-string "\n\\(\n+\\)" "\n\n" contents))
+        (imports (rlr/touying--collect-imports info)))
     (format "// content.typ
 // Slide content for %s, written once as a function of its building
 // blocks so it can render either as live Touying slides (*-slides.typ) or
@@ -264,7 +308,7 @@ handoutnote/etc, so it needs its own entry here."
 //
 // Generated from an Org source file by ox-touying.el -- re-export
 // rather than hand-editing, or hand-edits will be overwritten.
-
+%s
 #let content(
   title-slide,
   pause,
@@ -278,6 +322,7 @@ handoutnote/etc, so it needs its own entry here."
 %s]
 "
             (if (org-string-nw-p title) title "Untitled")
+            (if imports (concat "\n" (apply #'concat imports)) "")
             contents)))
 
 (org-export-define-derived-backend 'touying 'ascii
@@ -285,6 +330,7 @@ handoutnote/etc, so it needs its own entry here."
   '((bold . rlr/touying-bold)
     (center-block . rlr/touying-center-block)
     (code . rlr/touying-code)
+    (export-block . rlr/touying-export-block)
     (export-snippet . rlr/touying-export-snippet)
     (headline . rlr/touying-headline)
     (italic . rlr/touying-italic)
@@ -300,6 +346,7 @@ handoutnote/etc, so it needs its own entry here."
     (table-cell . rlr/touying-table-cell)
     (table-row . rlr/touying-table-row)
     (template . rlr/touying-template)
+    (underline . rlr/touying-underline)
     (verbatim . rlr/touying-verbatim))
   :menu-entry
   '(?j "Export to Touying content.typ"

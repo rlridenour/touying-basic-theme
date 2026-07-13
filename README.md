@@ -50,11 +50,12 @@ Conventions:
 - `#+begin_handoutnote ... #+end_handoutnote` → `#handout-note[...]`
 - `#+begin_center ... #+end_center` → `#align(center)[...]`
 - `@@typst:...@@` export snippets pass straight through as raw Typst — use `@@typst:#pause@@` for a progressive reveal.
+- `#+begin_export typst ... #+end_export` blocks pass straight through as raw Typst too, for multi-line code or a call into another local package (e.g. `@local/standard-form:0.2.0`). Since `content.typ` is its own Typst module, such a package can't be imported from `config.typ` the way `basic-theme` is — instead add, once per package, a top-of-file keyword in `talk.org`: `#+TOUYING_IMPORT: "@local/standard-form:0.2.0": *`, which becomes an `#import ...` line at the top of the generated `content.typ`.
 - `#+begin_columns` containing two `#+begin_column ... #+end_column` blocks → `#two-column-slide[...][...]`
 - `#+begin_fullslide ... #+end_fullslide` → `#full-slide(...)`. A lone image link inside becomes a full-bleed image (`width: 100%, height: 100%, fit: "cover"`) unless it has its own `#+ATTR_TOUYING` sizing (see below), which is kept as-is instead of being forced to fill the slide.
 - `#+begin_statement ... #+end_statement` → big centered text (`align(center + horizon, text(size: ...)[...])`), sized via a preceding `#+ATTR_TOUYING: :size ...` (default `2em`). Nest inside `#+begin_fullslide` for a blank, title-less statement slide, or leave it standalone under a heading to keep the frame title.
 - An image link honors a preceding `#+ATTR_TOUYING: :width ... :height ... :fit ... :align ...`, e.g. `#+ATTR_TOUYING: :width 50%`. `:align` (e.g. `center`, `center + horizon`) wraps the image in `#align(...)`, since alignment is a property of the surrounding container in Typst, not of `image()` itself.
-- Bold/italic/code/lists/links get basic Typst equivalents.
+- Bold/italic/underline/code/lists/links get basic Typst equivalents.
 - An Org table → `#table(columns: N, [cell], [cell], ...)`. The header row (the row group before the table's first hline, if any) is rendered in bold. Column widths, alignment, footnotes, and other exotic constructs aren't specially handled -- expect to touch those up by hand in `content.typ` afterward.
 
 Example:
