@@ -114,6 +114,20 @@ Content goes here.
 Here `===` becomes the visible frame title; `=` and `==` produce
 their own full section / subsection slides.
 
+If a talk has no sections at all, pass `slide-level: 1` so `=` is the
+frame directly:
+
+```typst
+#show: basic-theme.with(
+  slide-level: 1,
+  // ...
+)
+
+= A slide
+
+Content goes here.
+```
+
 ## Two-column slides
 
 `two-column-slide` lays out its two arguments side by side, under the

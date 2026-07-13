@@ -14,6 +14,8 @@
 //   =   section        (\section)
 //   ==  subsection      (\subsection)
 //   === slide / frame    (\begin{frame}{...})
+// Pass slide-level: 1 for a talk with no sections at all:
+//   =   slide / frame  (\begin{frame}{...})
 
 #import "@preview/touying:0.7.4": *
 #import "@preview/touying:0.7.4": speaker-note as touying-speaker-note
@@ -245,7 +247,8 @@
 
 /// New section slide: bold heading, centered on an otherwise blank
 /// slide, mirroring the `section page` template. Triggered
-/// automatically on level-1 (`=`) headings.
+/// automatically on level-1 (`=`) headings when slide-level > 1 --
+/// i.e. whenever `=` is a genuine section rather than the frame itself.
 #let new-section-slide(config: (:), body) = centered-slide(config: config, [
   #text(size: 1.4em, weight: "bold", utils.display-current-heading(level: 1))
   #body
@@ -352,8 +355,9 @@
 ///   on white), `"black"` (white on black), or `"gray"` (black on light
 ///   gray). Default is `"white"`.
 ///
-/// - slide-level (int): The heading depth that becomes a frame -- `2` (the
-///   default) for a talk with no subsections (`=` section, `==` frame
+/// - slide-level (int): The heading depth that becomes a frame -- `1` for a
+///   talk with no sections at all (`=` frame directly), `2` (the default)
+///   for a talk with sections but no subsections (`=` section, `==` frame
 ///   directly), or `3` if the talk uses subsections (`=` section, `==`
 ///   subsection, `===` frame). No other values are supported.
 ///
@@ -373,8 +377,8 @@
     message: "basic-theme: variant must be one of " + repr(variant-colors.keys()),
   )
   assert(
-    slide-level in (2, 3),
-    message: "basic-theme: slide-level must be 2 (no subsections) or 3 (with subsections)",
+    slide-level in (1, 2, 3),
+    message: "basic-theme: slide-level must be 1 (no sections), 2 (no subsections), or 3 (with subsections)",
   )
   let (bg, fg) = variant-colors.at(variant)
   let subslide-preamble = if subslide-preamble == auto {
@@ -399,15 +403,18 @@
     config-common(
       slide-level: slide-level,
       slide-fn: slide,
-      new-section-slide-fn: new-section-slide,
-      // Touying's core dispatch always routes depth-2 headings through
+      // Touying's core dispatch always routes depth-1 headings through
+      // new-section-slide-fn, and depth-2 headings through
       // new-subsection-slide-fn, regardless of slide-level (see its
-      // core.typ). At slide-level: 2, a depth-2 heading *is* the frame
-      // itself, not a subsection -- registering this unconditionally
-      // made every frame heading also spawn a phantom title-only
-      // "subsection" page right before its real content. Only wire it
-      // up when slide-level: 3 actually puts a genuine subsection at
-      // depth 2.
+      // core.typ). At slide-level: 1, a depth-1 heading *is* the frame
+      // itself, not a section -- and at slide-level: 2, a depth-2
+      // heading *is* the frame, not a subsection -- registering these
+      // unconditionally made every frame heading also spawn a phantom
+      // title-only section/subsection page right before its real
+      // content. Only wire each one up when a genuine section (depth 1,
+      // slide-level > 1) or subsection (depth 2, slide-level > 2)
+      // actually exists below the frame level.
+      new-section-slide-fn: if slide-level > 1 { new-section-slide } else { none },
       new-subsection-slide-fn: if slide-level > 2 { new-subsection-slide } else { none },
       datetime-format: basic-theme-date-format,
     ),

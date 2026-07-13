@@ -13,8 +13,10 @@
 ;; Uses the "basic-theme" Touying package (@local/basic-theme:0.1.0):
 ;; heading levels map onto section (=) / frame (==) by default (pass
 ;; slide-level: 3 for a talk that needs a subsection (==) level between
-;; them, with frames at ===), the theme supports "white"/"black"/"gray"
-;; variants, and plain content under a heading needs no wrapper -- it
+;; them, with frames at ===, or slide-level: 1 for a talk with no
+;; sections at all, frames directly at =), the theme supports
+;; "white"/"black"/"gray" variants, and plain content under a heading
+;; needs no wrapper -- it
 ;; becomes a slide automatically, which keeps content.typ close to a
 ;; plain Org-mode export. The generated handout numbers every heading
 ;; (1, 1.1, 1.2, 2, ...) and draws a line above each handout-note, to
@@ -99,8 +101,9 @@ SLUG names the corresponding slides/handout files in the comments."
 // variant: \"white\" (default), \"black\", or \"gray\".
 //
 // slide-level: 2 (default) for a talk with no subsections (`=`
-// section, `==` frame directly), or 3 if this talk uses subsections
-// (`=` section, `==` subsection, `===` frame).
+// section, `==` frame directly), 3 if this talk uses subsections
+// (`=` section, `==` subsection, `===` frame), or 1 for a talk with no
+// sections at all (`=` frame directly).
 #let project(variant: \"white\", slide-level: 2, body) = {
   show: basic-theme.with(
     aspect-ratio: \"16-9\",
