@@ -54,6 +54,10 @@
 ;;     center' -> #align(center, image("path", height: 100%)).
 ;;   - Bold/italic/underline/code/lists/links get basic Typst
 ;;     equivalents.
+;;   - #+begin_verse ... #+end_verse passes through as-is; end a line
+;;     with Org's own `\\' markup to keep it on its own line -- a plain
+;;     newline between verse lines is otherwise just soft wrap space in
+;;     Typst, not a break.
 ;;   - An Org table -> #table(columns: N, [cell], [cell], ...). The
 ;;     header row (the row group before the table's first hline, if
 ;;     any) is rendered in bold. Column widths, alignment, and other
@@ -97,6 +101,13 @@ Needs its own entry rather than falling back to the ascii backend:
 ascii's underline transcoder also formats as `_%s_', which in Typst
 is italic emphasis, not underline."
   (format "#underline[%s]" contents))
+
+(defun rlr/touying-line-break (_line-break _contents _info)
+  "Transcode a LINE-BREAK object into a Typst hard line break.
+LINE-BREAK is Org's own `\\\\' end-of-line markup (most useful inside
+a verse block, where plain newlines between lines are otherwise just
+soft wrap space in Typst, not an actual break)."
+  "\\\n")
 
 (defun rlr/touying-code (code _contents _info)
   "Transcode a CODE element into a Typst raw span."
@@ -283,6 +294,15 @@ type, distinct from the generic `special-block' used by speakernote/
 handoutnote/etc, so it needs its own entry here."
   (format "#align(center)[\n%s\n]\n\n" (string-trim-right (or contents ""))))
 
+(defun rlr/touying-verse-block (_verse-block contents _info)
+  "Transcode a VERSE-BLOCK element, passing its content through as-is.
+Needs its own entry rather than falling back to the ascii backend:
+ascii's verse-block transcoder indents every line by a fixed margin
+for plain-text quoting, which is unwanted noise in Typst output. Line
+breaks between verse lines come from `rlr/touying-line-break', same as
+everywhere else -- end a line with `\\\\' to keep it on its own line."
+  (format "%s\n\n" (string-trim-right (or contents ""))))
+
 (defun rlr/touying-section (_section contents _info)
   "Transcode a SECTION element, passing its content through."
   contents)
@@ -352,6 +372,7 @@ or the slides/handout entry points."
     (headline . rlr/touying-headline)
     (italic . rlr/touying-italic)
     (item . rlr/touying-item)
+    (line-break . rlr/touying-line-break)
     (link . rlr/touying-link)
     (paragraph . rlr/touying-paragraph)
     (plain-list . rlr/touying-plain-list)
@@ -364,7 +385,8 @@ or the slides/handout entry points."
     (table-row . rlr/touying-table-row)
     (template . rlr/touying-template)
     (underline . rlr/touying-underline)
-    (verbatim . rlr/touying-verbatim))
+    (verbatim . rlr/touying-verbatim)
+    (verse-block . rlr/touying-verse-block))
   :menu-entry
   '(?j "Export to Touying content.typ"
        ((?f "As content.typ file" rlr/org-export-to-touying-content))))
