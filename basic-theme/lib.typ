@@ -2,9 +2,11 @@
 //
 // A Touying theme that replicates the "basicwhite" Beamer theme:
 // bold text, no header/footer chrome, and a two-column title slide
-// with an optional logo. Offers three background/text variants --
-// "white" (black on white), "black" (white on black), and "gray"
-// (black on light gray) -- selected via `basic-theme(variant: ...)`.
+// with an optional logo. Offers four background/text variants --
+// "white" (black on white), "black" (white on black), "gray"
+// (black on light gray), and "obu" (same as "white", but with
+// title/section/subsection headings and regular slide titles in an
+// accent color) -- selected via `basic-theme(variant: ...)`.
 //
 // Heading levels map onto the Beamer document structure. By default
 // (slide-level: 2, since most talks don't need subsections):
@@ -218,7 +220,7 @@
   let text-block = {
     set align(left)
     set text(fill: self.colors.neutral-darkest)
-      block(below: .8em, text(size: 1.3em, weight: "bold", info.title))
+      block(below: .8em, text(size: 1.3em, weight: "bold", fill: self.store.title-color, info.title))
     if info.subtitle not in (none, []) {
       block(below: 1em, text(size: .9em, weight: "bold", info.subtitle))
     }
@@ -249,24 +251,45 @@
 /// slide, mirroring the `section page` template. Triggered
 /// automatically on level-1 (`=`) headings when slide-level > 1 --
 /// i.e. whenever `=` is a genuine section rather than the frame itself.
-#let new-section-slide(config: (:), body) = centered-slide(config: config, [
-  #text(size: 1.4em, weight: "bold", utils.display-current-heading(level: 1))
-  #body
-])
+///
+/// Built directly on `touying-slide`/`touying-slide-wrapper` (rather
+/// than delegating to `centered-slide`) so `self` -- and therefore
+/// `self.store.title-color` -- is available for the heading's fill;
+/// nesting a second slide-wrapper inside `centered-slide`'s own would
+/// produce an inner, never-invoked wrapper instead of a real slide.
+#let new-section-slide(config: (:), body) = touying-slide-wrapper(self => {
+  touying-slide(self: self, config: config, align(
+    center + horizon,
+    [
+      #text(size: 1.4em, weight: "bold", fill: self.store.title-color, utils.display-current-heading(level: 1))
+      #body
+    ],
+  ))
+})
 
 /// New subsection slide: same treatment, one size down, but flush
 /// left rather than centered, mirroring the `subsection page`
-/// template. Triggered automatically on level-2 (`==`) headings.
-#let new-subsection-slide(config: (:), body) = left-slide(config: config, [
-  #text(size: 1.15em, weight: "bold", utils.display-current-heading(level: 2))
-  #body
-])
+/// template. Triggered automatically on level-2 (`==`) headings. See
+/// `new-section-slide` for why this doesn't delegate to `left-slide`.
+#let new-subsection-slide(config: (:), body) = touying-slide-wrapper(self => {
+  touying-slide(self: self, config: config, align(
+    horizon,
+    [
+      #text(size: 1.15em, weight: "bold", fill: self.store.title-color, utils.display-current-heading(level: 2))
+      #body
+    ],
+  ))
+})
 
-// Background/text colors for each variant.
+// Background/text colors for each variant. `accent` is the color used
+// for title/section/subsection headings and regular slide titles --
+// it defaults to the same value as `fg`, except for "obu", which
+// keeps black-on-white body text but colors just those headings.
 #let variant-colors = (
-  white: (bg: white, fg: black),
-  black: (bg: black, fg: white),
-  gray: (bg: rgb("#eeeeee"), fg: black),
+  white: (bg: white, fg: black, accent: black),
+  black: (bg: black, fg: white, accent: white),
+  gray: (bg: rgb("#eeeeee"), fg: black, accent: black),
+  obu: (bg: white, fg: black, accent: cmyk(80%, 9%, 88%, 60%)),
 )
 
 // The speaker-notes-view header (used by `show-notes-on-second-screen`/
@@ -352,8 +375,10 @@
 /// - aspect-ratio (string): The aspect ratio of the slides. Default is `16-9`.
 ///
 /// - variant (string): The background/text color scheme -- `"white"` (black
-///   on white), `"black"` (white on black), or `"gray"` (black on light
-///   gray). Default is `"white"`.
+///   on white), `"black"` (white on black), `"gray"` (black on light
+///   gray), or `"obu"` (same as `"white"`, but title/section/subsection
+///   headings and regular slide titles use an accent color instead of
+///   black). Default is `"white"`.
 ///
 /// - slide-level (int): The heading depth that becomes a frame -- `1` for a
 ///   talk with no sections at all (`=` frame directly), `2` (the default)
@@ -380,13 +405,14 @@
     slide-level in (1, 2, 3),
     message: "basic-theme: slide-level must be 1 (no sections), 2 (no subsections), or 3 (with subsections)",
   )
-  let (bg, fg) = variant-colors.at(variant)
+  let (bg, fg, accent) = variant-colors.at(variant)
   let subslide-preamble = if subslide-preamble == auto {
     block(
       below: 2em,
       text(
         size: 1.2em,
         weight: "bold",
+        fill: accent,
         utils.display-current-heading(level: slide-level, numbered: false),
       ),
     )
@@ -443,6 +469,7 @@
     // save the variables for later use
     config-store(
       subslide-preamble: subslide-preamble,
+      title-color: accent,
     ),
     ..args,
   )

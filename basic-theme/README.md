@@ -3,9 +3,11 @@
 A [Touying](https://touying-typ.github.io/) theme that replicates the
 `basicwhite` Beamer theme (see `../basicwhite-beamer-theme`): bold
 text, no header/footer chrome, and a two-column title slide with an
-optional logo. Offers three background/text variants: `"white"`
-(black on white, the default), `"black"` (white on black), and
-`"gray"` (black on light gray).
+optional logo. Offers four background/text variants: `"white"`
+(black on white, the default), `"black"` (white on black), `"gray"`
+(black on light gray), and `"obu"` (same as `"white"`, but with
+title/section/subsection headings and regular slide titles in an
+accent color).
 
 This folder is laid out as a Typst package (`typst.toml` + `lib.typ`
 entrypoint), so it can be installed as a local package -- see
@@ -19,7 +21,7 @@ entrypoint), so it can be installed as a local package -- see
 
 #show: basic-theme.with(
   aspect-ratio: "16-9",
-  variant: "white", // or "black", "gray"
+  variant: "white", // or "black", "gray", "obu"
   config-info(
     title: [My Talk],
     subtitle: [A subtitle],

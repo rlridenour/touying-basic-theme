@@ -1,6 +1,6 @@
 # touying-basic-theme
 
-A [Touying](https://touying-typ.github.io/) theme for Typst presentations, replicating the `basicwhite` Beamer theme: bold sans-serif text, no header/footer chrome, and a two-column title slide with an optional logo. Comes in three background/text variants: `"white"` (black on white, the default), `"black"` (white on black), and `"gray"` (black on light gray).
+A [Touying](https://touying-typ.github.io/) theme for Typst presentations, replicating the `basicwhite` Beamer theme: bold sans-serif text, no header/footer chrome, and a two-column title slide with an optional logo. Comes in four background/text variants: `"white"` (black on white, the default), `"black"` (white on black), `"gray"` (black on light gray), and `"obu"` (same as `"white"`, but with title/section/subsection headings and regular slide titles in an accent color).
 
 The theme lives in [`basic-theme/`](basic-theme) — see that folder's README for the full option reference, including how to install it as a local Typst package. Quick start, assuming it's installed as `@local/basic-theme:0.1.0`:
 
@@ -10,7 +10,7 @@ The theme lives in [`basic-theme/`](basic-theme) — see that folder's README fo
 
 #show: basic-theme.with(
   aspect-ratio: "16-9",
-  variant: "white", // or "black", "gray"
+  variant: "white", // or "black", "gray", "obu"
   config-info(
     title: [My Talk],
     subtitle: [A subtitle],
