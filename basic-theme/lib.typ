@@ -29,11 +29,17 @@
 #let basic-theme-date-format = "[month repr:long] [day padding:none], [year]"
 
 /// Speaker note, shown smaller than the slide body so it reads as a
-/// presenter aside rather than slide content.
+/// presenter aside rather than slide content. Defaults to `subslide:
+/// none` (shown on every subslide of a `#pause`-built reveal), rather
+/// than Touying's own default of `auto` (shown only from whatever
+/// subslide the note's textual position falls on onward) -- notes are
+/// written once, typically after all of a slide's `#pause` markers,
+/// and are meant to be visible throughout the reveal, not just once
+/// the last piece of content has appeared.
 #let speaker-note(
   mode: "typ",
   setting: text.with(size: .7em),
-  subslide: auto,
+  subslide: none,
   note,
 ) = touying-speaker-note(mode: mode, setting: setting, subslide: subslide, note)
 
@@ -56,6 +62,22 @@
     and child.value.at("kind", default: none) == "touying-jump/pause/meanwhile"
     and child.value.at("relative", default: false) == true
     and child.value.at("n", default: 0) == 1
+)
+
+// Detect a `#speaker-note[...]` marker. It must never end up inside a
+// `uncover(...)`-wrapped chunk (see `_reserve-pauses`): on a subslide
+// where that chunk is hidden, `uncover` covers it with `hide()`, which
+// can't contain a metadata mark and panics ("Unsupported mark
+// touying-speaker-note ... can't use it inside some functions like
+// context"). Touying's own slide engine already special-cases this
+// mark wherever it appears, always emitting the note regardless of
+// surrounding cover/uncover state -- so it's pulled out and passed
+// through unwrapped instead.
+#let _is-speaker-note(child) = (
+  type(child) == content
+    and child.func() == metadata
+    and type(child.value) == dictionary
+    and child.value.at("kind", default: none) == "touying-speaker-note"
 )
 
 // Rewrite BODY so each top-level `#pause` becomes a boundary between
@@ -83,8 +105,10 @@
   chunks
     .enumerate()
     .map(((i, parts)) => {
-      let chunk-body = parts.sum(default: [])
-      if i == 0 { chunk-body } else { uncover(str(i + 1) + "-", chunk-body) }
+      let notes = parts.filter(_is-speaker-note).sum(default: [])
+      let chunk-body = parts.filter(child => not _is-speaker-note(child)).sum(default: [])
+      let visible-chunk = if i == 0 { chunk-body } else { uncover(str(i + 1) + "-", chunk-body) }
+      visible-chunk + notes
     })
     .sum()
 }
