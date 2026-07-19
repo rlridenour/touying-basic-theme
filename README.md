@@ -57,7 +57,7 @@ Conventions:
 - An image link honors a preceding `#+ATTR_TOUYING: :width ... :height ... :fit ... :align ...`, e.g. `#+ATTR_TOUYING: :width 50%`. `:align` (e.g. `center`, `center + horizon`) wraps the image in `#align(...)`, since alignment is a property of the surrounding container in Typst, not of `image()` itself.
 - Bold/italic/underline/code/lists/links get basic Typst equivalents.
 - `#+begin_verse ... #+end_verse` passes through as-is. End a line with Org's own `\\` markup to keep it on its own line — a plain newline between verse lines is otherwise just soft wrap space in Typst, not an actual break.
-- An Org table → `#table(columns: N, [cell], [cell], ...)`. The header row (the row group before the table's first hline, if any) is rendered in bold. Column widths, alignment, footnotes, and other exotic constructs aren't specially handled -- expect to touch those up by hand in `content.typ` afterward.
+- An Org table → `#table(columns: N, [cell], [cell], ...)`, with `stroke: none` by default -- only hlines actually present in the source table are kept, via `table.hline()`. No automatic header-row bolding -- bold a header cell by hand in the Org source (e.g. `*X*`) if wanted. A preceding `#+ATTR_TYPST: :key value ...` overrides or adds `#table(...)` arguments verbatim, e.g. `#+ATTR_TYPST: :stroke none :columns (auto, 3em, 3em, 3em)` or `#+ATTR_TYPST: :align (left, center, center)`. Footnotes and other exotic constructs aren't specially handled -- expect to touch those up by hand in `content.typ` afterward.
 
 Example:
 
