@@ -126,6 +126,42 @@ Level one headings are always section titles. They become a formatted section pa
 As in Beamer, this essentially produces separate slides. It is especially useful for keeping students' attention during the lecture, preventing them from focusing on writing down the entire slide information  as the instructor is speaking.
 ]
 
+== Tables
+
+#table(
+  columns: (auto, 1fr, 1fr, 1fr),
+  stroke: none,
+  align: (left, center, center, center),
+[Group], [X], [Y], [Z],
+table.hline(),
+[A], [+5], [-3], [0],
+[B], [-2], [+1], [+1],
+[C], [-1], [+3], [-2],
+[Total], [+2], [+1], [-1],
+)
+
+#speaker-note[
+- Plain Org tables become \#table(...)
+- No automatic header bolding
+- \#+ATTR_TYPST overrides columns, stroke, alignment
+]
+
+#handout-note[
+An Org table becomes a Typst `#table(...)` call automatically, with no borders (only hlines actually in the source table survive, as `table.hline()`) and no automatic header-row bolding -- bold a header cell by hand (`*Header*`) if wanted. The table above was written as plain Org markup with a preceding `#+ATTR_TYPST:` line:
+
+```org
+#+ATTR_TYPST: :columns (auto, 1fr, 1fr, 1fr) :align (left, center, center, center)
+| Group |  X |  Y |  Z |
+|-------+----+----+----|
+| A     | +5 | -3 |  0 |
+| B     | -2 | +1 | +1 |
+| C     | -1 | +3 | -2 |
+| Total | +2 | +1 | -1 |
+```
+
+`:columns` and `:stroke` override the exporter's own defaults (column count sized to the table, `stroke: none`); any other key, like `:align` above, is simply passed through as an extra `#table(...)` argument.
+]
+
 == Layout Blocks
 
 - Used for special cases
