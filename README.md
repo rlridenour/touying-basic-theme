@@ -45,7 +45,7 @@ Headings map onto the Beamer document structure: `=` is a section (`\section`) a
 
 Conventions:
 
-- Headline depth maps 1:1 onto Typst heading depth (`*` -> `=`, `**` -> `==`, `***` -> `===`); plain body text under a heading needs no wrapper, exactly as in `content.typ` directly. Whether `==` is a frame or a subsection depends on the presentation's own `slide-level` in `config.typ`, not on the exporter.
+- Headline depth maps 1:1 onto Typst heading depth (`*` -> `=`, `**` -> `==`, `***` -> `===`); plain body text under a heading needs no wrapper, exactly as in `content.typ` directly. Whether `==` is a frame or a subsection depends on the presentation's own `slide-level` in `config.typ`, not on the exporter — a scaffolded `config.typ` defines it once as a `#let slide-level = 2` constant that both the live deck and the handout read, so a talk with subsections needs that one line changed to `3` and nothing else.
 - `#+begin_speakernote ... #+end_speakernote` → `#speaker-note[...]`
 - `#+begin_handoutnote ... #+end_handoutnote` → `#handout-note[...]`
 - `#+begin_center ... #+end_center` → `#align(center)[...]`
